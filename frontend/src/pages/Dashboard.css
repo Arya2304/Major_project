@@ -1,0 +1,229 @@
+.dashboard-page {
+  min-height: 100vh;
+  padding: 2rem;
+  background: #f8f9fa;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+}
+
+.dashboard-header p {
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-icon {
+  font-size: 3rem;
+}
+
+.stat-content h3 {
+  font-size: 2.5rem;
+  margin: 0 0 0.25rem 0;
+  color: #4a90e2;
+}
+
+.stat-content p {
+  margin: 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.my-courses-section,
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 2rem;
+  margin: 0 0 2rem 0;
+  color: #2c3e50;
+}
+
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.course-enrollment-card {
+  display: block;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.course-enrollment-card:hover,
+.course-enrollment-card:focus {
+  background: #e9ecef;
+  transform: translateX(4px);
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.enrollment-content {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.enrollment-thumbnail {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.enrollment-info {
+  flex: 1;
+}
+
+.enrollment-info h3 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem 0;
+  color: #2c3e50;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.completed-badge {
+  display: inline-block;
+  background: #d4edda;
+  color: #155724;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.action-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.action-card:hover,
+.action-card:focus {
+  background: #e9ecef;
+  transform: translateY(-4px);
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.action-icon {
+  font-size: 3rem;
+}
+
+.action-card h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.action-card p {
+  margin: 0;
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #666;
+}
+
+.empty-state p {
+  font-size: 1.25rem;
+  margin: 0 0 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 1rem;
+  }
+
+  .enrollment-content {
+    flex-direction: column;
+  }
+
+  .enrollment-thumbnail {
+    width: 100%;
+    height: 150px;
+  }
+}
+

@@ -1,0 +1,100 @@
+.sign-card {
+  display: block;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sign-card:hover,
+.sign-card:focus {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  outline: 3px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.sign-card-image {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sign-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sign-placeholder {
+  font-size: 4rem;
+}
+
+.sign-language-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #4a90e2;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.sign-card-content {
+  padding: 1.5rem;
+}
+
+.sign-word {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+}
+
+.sign-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.difficulty-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.difficulty-1 {
+  background: #d4edda;
+  color: #155724;
+}
+
+.difficulty-2 {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.difficulty-3 {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.video-count {
+  color: #666;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
