@@ -12,6 +12,73 @@ import {
 import Loader from '../components/common/Loader';
 import './Practice.css';
 
+// ============================================================================
+// CIRCULAR PROGRESS COMPONENT
+// ============================================================================
+
+const CircularProgress = ({ accuracy, status }) => {
+  const circumference = 2 * Math.PI * 45; // radius = 45
+  const offset = circumference - (accuracy / 100) * circumference;
+  
+  const getColor = () => {
+    if (accuracy >= 80) return '#10b981'; // green
+    if (accuracy >= 60) return '#f59e0b'; // orange
+    return '#ef4444'; // red
+  };
+
+  const getGradientId = `gradient-${accuracy}`;
+
+  return (
+    <div className="relative w-40 h-40 mx-auto">
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+        {/* Background circle */}
+        <circle
+          cx="60"
+          cy="60"
+          r="45"
+          fill="none"
+          stroke="#f3f4f6"
+          strokeWidth="3"
+        />
+        
+        {/* Glow defs */}
+        <defs>
+          <filter id="glow-accuracy">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Progress circle with animation */}
+        <circle
+          cx="60"
+          cy="60"
+          r="45"
+          fill="none"
+          stroke={getColor()}
+          strokeWidth="3"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className="accuracy-circle transition-all duration-500"
+          filter="url(#glow-accuracy)"
+        />
+      </svg>
+
+      {/* Center text */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="text-4xl font-black" style={{ color: getColor() }}>
+          {accuracy}%
+        </div>
+        <div className="text-xs font-bold text-gray-500 mt-1">ACCURACY</div>
+      </div>
+    </div>
+  );
+};
+
 const Practice = () => {
   const navigate = useNavigate();
   const liveDataIntervalRef = useRef(null);
@@ -284,14 +351,14 @@ const Practice = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Device Connection Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            {/* Device Connection Section - Premium */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 hover:shadow-lg transition-shadow duration-300">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-2xl font-black text-dark-500 mb-1">📱 Device Connection</h2>
                   <p className="text-sm text-gray-600">Connect your HastVani glove to begin</p>
                 </div>
-                <div className={`w-4 h-4 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-300'}`} />
+                <div className={`w-4 h-4 rounded-full ${isConnected ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-pulse' : 'bg-gray-300'}`} />
               </div>
 
               {isConnected ? (
@@ -322,50 +389,115 @@ const Practice = () => {
               )}
             </div>
 
-            {/* Practice Session Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-2xl font-black text-dark-500 mb-6">🎯 Practice Session</h2>
+            {/* Practice Session Section - Premium */}
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8 hover:shadow-lg transition-shadow duration-300">
+              <div className="flex items-center gap-2 mb-8">
+                <h2 className="text-2xl font-black text-dark-500">🎯 Live Practice Session</h2>
+                {sessionStarted && (
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                )}
+              </div>
 
               {sessionStarted ? (
                 <div className="space-y-8">
-                  {/* Current Sign */}
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-gray-600 uppercase mb-2">Current Sign</p>
-                    <p className="text-6xl font-black text-primary-600 mb-4">{currentSign}</p>
+                  {/* Current Sign - Premium Display */}
+                  <div className="text-center mb-8">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Real-Time Detection</p>
+                    <p className="text-7xl font-black bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent mb-4">{currentSign}</p>
                   </div>
 
-                  {/* Accuracy Display */}
-                  <div className={`p-6 rounded-xl text-center ${getStatusBgColor()}`}>
-                    <p className="text-sm font-bold text-gray-600 uppercase mb-2">Accuracy</p>
-                    <p className={`text-5xl font-black mb-2 ${getStatusColor()}`}>{accuracy}%</p>
-                    <p className={`text-lg font-bold ${getStatusColor()}`}>{getStatusMessage()}</p>
+                  {/* Accuracy Display - Circular Progress */}
+                  <div className="flex justify-center py-6">
+                    <CircularProgress accuracy={accuracy} status={status} />
                   </div>
 
-                  {/* Statistics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-200">
-                      <p className="text-sm font-bold text-gray-600 mb-2">Attempts</p>
-                      <p className="text-3xl font-black text-dark-500">{stats.attempts}</p>
+                  {/* Status Feedback - With Glow */}
+                  <div className={`p-6 rounded-xl text-center transition-all duration-300 ${
+                    status === 'correct' 
+                      ? 'bg-green-50 border-2 border-green-400 shadow-glow-green' 
+                      : status === 'retry'
+                      ? 'bg-orange-50 border-2 border-orange-400 shadow-glow-orange'
+                      : 'bg-blue-50 border-2 border-blue-300 shadow-glow-blue'
+                  }`}>
+                    <p className={`text-lg font-black mb-3 ${
+                      status === 'correct' 
+                        ? 'text-green-600' 
+                        : status === 'retry'
+                        ? 'text-orange-600'
+                        : 'text-blue-600'
+                    }`}>
+                      {status === 'correct' ? '✓ CORRECT' : status === 'retry' ? '✕ TRY AGAIN' : '◉ LISTENING'}
+                    </p>
+                    <p className={`text-sm font-bold tracking-wide ${
+                      status === 'correct' 
+                        ? 'text-green-700' 
+                        : status === 'retry'
+                        ? 'text-orange-700'
+                        : 'text-blue-700'
+                    }`}>
+                      {getStatusMessage()}
+                    </p>
+                  </div>
+
+                  {/* Hand Tracking Panel */}
+                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-xl border border-blue-500/30 shadow-lg shadow-blue-500/10">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <div className="inline-block">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      </div>
+                      <p className="text-blue-300 font-bold text-lg tracking-wide">Live Hand Tracking</p>
+                      <div className="inline-block">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+                      </div>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-200">
-                      <p className="text-sm font-bold text-gray-600 mb-2">Correct</p>
-                      <p className="text-3xl font-black text-green-600">{stats.correct}</p>
+                    <div className="flex justify-center gap-1 opacity-60">
+                      {[...Array(12)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-1 h-8 bg-gradient-to-t from-blue-500 to-blue-300 rounded-full"
+                          style={{
+                            opacity: Math.sin(i * 0.5 + Date.now() / 200) * 0.5 + 0.5,
+                          }}
+                        ></div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Live Stats - Premium Layout */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-5 rounded-xl border border-slate-200 hover:shadow-md transition-all duration-300 hover:border-blue-300">
+                      <p className="text-xs font-bold text-gray-600 uppercase mb-2 tracking-wider">Attempts</p>
+                      <p className="text-3xl font-black text-slate-900 inline-block">{stats.attempts}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-slate-50 to-green-50 p-5 rounded-xl border border-slate-200 hover:shadow-md transition-all duration-300 hover:border-green-300">
+                      <p className="text-xs font-bold text-gray-600 uppercase mb-2 tracking-wider">Correct</p>
+                      <p className="text-3xl font-black text-green-600 inline-block">{stats.correct}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-slate-50 to-primary-50 p-5 rounded-xl border border-slate-200 hover:shadow-md transition-all duration-300 hover:border-primary-300">
+                      <p className="text-xs font-bold text-gray-600 uppercase mb-2 tracking-wider">Accuracy</p>
+                      <p className="text-3xl font-black text-primary-600 inline-block">{stats.correct > 0 ? Math.round((stats.correct / stats.attempts) * 100) : 0}%</p>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - Premium with Icons */}
+                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
                     <button
                       onClick={handleNext}
-                      className="px-6 py-3 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 active:scale-95 transition-all duration-200"
+                      className="group relative px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-500/50 hover:scale-105 active:scale-95 transition-all duration-200 overflow-hidden"
                     >
-                      Next Sign →
+                      <span className="flex items-center justify-center gap-2">
+                        <span>Next Sign</span>
+                        <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+                      </span>
                     </button>
                     <button
                       onClick={handleEnd}
-                      className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 active:scale-95 transition-all duration-200"
+                      className="group relative px-8 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-red-500/50 hover:scale-105 active:scale-95 transition-all duration-200 overflow-hidden"
                     >
-                      End Session
+                      <span className="flex items-center justify-center gap-2">
+                        <span>⊗</span>
+                        <span>End Session</span>
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -373,9 +505,9 @@ const Practice = () => {
                 <button
                   onClick={handleStart}
                   disabled={!isConnected || startingLoader}
-                  className="w-full px-6 py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                  className="w-full px-8 py-5 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-green-500/50 hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg disabled:hover:scale-100"
                 >
-                  {startingLoader ? 'Starting session...' : !isConnected ? 'Connect device first' : 'Start Practice Session'}
+                  {startingLoader ? 'Starting session...' : !isConnected ? 'Connect device first' : '▶ Start Practice Session'}
                 </button>
               )}
             </div>
