@@ -74,9 +74,8 @@ const Dashboard = () => {
       </div>
 
       {/* Continue Learning */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      <div className="mb-10">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
             {/* Card Header */}
             <div className="bg-gradient-to-br from-primary-500 via-primary-550 to-primary-600 px-8 py-5">
               <h2 className="text-xl font-black text-white flex items-center gap-2">📚 Continue Learning</h2>
@@ -141,44 +140,6 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Quick Stats Sidebar */}
-        <div className="space-y-5">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-            <h3 className="text-lg font-black text-dark-500 mb-5">🎖️ Achievements</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-success-50 rounded-lg hover:bg-success-100 transition-colors duration-200">
-                <span className="text-2xl">⭐</span>
-                <div>
-                  <p className="font-bold text-gray-800 text-sm">First Steps</p>
-                  <p className="text-xs text-gray-600 font-medium">Completed 1st lesson</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors duration-200">
-                <span className="text-2xl">🔥</span>
-                <div>
-                  <p className="font-bold text-gray-800 text-sm">On Fire!</p>
-                  <p className="text-xs text-gray-600 font-medium">7 day streak</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg opacity-60 hover:opacity-80 transition-opacity duration-200">
-                <span className="text-2xl">🏆</span>
-                <div>
-                  <p className="font-bold text-gray-800 text-sm">Masterclass</p>
-                  <p className="text-xs text-gray-600 font-medium">Complete 5 courses</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-            <h3 className="text-lg font-black text-dark-500 mb-4">💡 Learning Tip</h3>
-            <p className="text-sm text-gray-700 leading-relaxed font-medium">
-              "Practice consistently! Even 15 minutes a day is better than cramming. Sign language learning is a marathon, not a sprint."
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Recent Lessons */}

@@ -25,15 +25,27 @@ const CourseDetail = () => {
     const fetchCourseData = async () => {
       setLoading(true);
       try {
+        // Ensure we have a valid course ID
+        if (!paramId) {
+          console.error('[CourseDetail] No course ID provided');
+          setLoading(false);
+          return;
+        }
+
         if (isDashboard) {
           // Use mock data for dashboard
+          console.log('[CourseDetail] Loading dashboard course:', paramId);
           const mockCourse = getCourseById(parseInt(paramId));
           if (mockCourse) {
             setCourse(mockCourse);
             setLessons(mockCourse.lessons || []);
+            console.log('[CourseDetail] Course loaded from mock data:', mockCourse.title);
+          } else {
+            console.error('[CourseDetail] Course not found in mock data:', paramId);
           }
         } else {
           // Use API for public course detail
+          console.log('[CourseDetail] Loading public course via API:', id);
           const [courseData, lessonsData] = await Promise.all([
             coursesAPI.getCourse(id),
             coursesAPI.getLessons({ course: id }),
@@ -45,6 +57,7 @@ const CourseDetail = () => {
         // Fetch enrollment and progress data for dashboard
         if (isDashboard) {
           try {
+            console.log('[CourseDetail] Fetching enrollment and progress for:', paramId);
             const enrollmentData = await coursesAPI.getEnrollment(parseInt(paramId));
             setEnrollment(enrollmentData);
 
@@ -55,8 +68,15 @@ const CourseDetail = () => {
               progressMap[progress.lesson] = progress;
             });
             setLessonProgress(progressMap);
+            console.log('[CourseDetail] Progress data loaded successfully');
           } catch (error) {
-            console.error('Failed to fetch enrollment/progress:', error);
+            // Gracefully handle API errors - don't redirect, just log
+            // This allows the page to still render with mock data
+            if (error.response?.status !== 401) {
+              console.warn('[CourseDetail] Non-critical API error (using mock data fallback):', error.message);
+            } else {
+              console.error('[CourseDetail] Authentication error:', error);
+            }
           }
         }
       } catch (error) {

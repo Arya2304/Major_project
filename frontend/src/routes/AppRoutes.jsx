@@ -16,6 +16,7 @@ import Dashboard from '../pages/Dashboard';
 import Learn from '../pages/Learn';
 import Dictionary from '../pages/Dictionary';
 import LessonPlayer from '../pages/LessonPlayer';
+import Practice from '../pages/Practice';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -81,15 +82,7 @@ const AppRoutes = () => {
         <Route path="/learn/:courseId" element={<CourseDetail />} />
         <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
         <Route path="/dictionary" element={<Dictionary />} />
-        <Route
-          path="/practice"
-          element={
-            <div className="p-8">
-              <h1 className="text-4xl font-black text-dark-500 mb-2">Practice</h1>
-              <p className="text-lg text-gray-600">Practice module coming soon!</p>
-            </div>
-          }
-        />
+        <Route path="/practice" element={<Practice />} />
         <Route
           path="/profile"
           element={

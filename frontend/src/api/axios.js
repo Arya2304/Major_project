@@ -25,13 +25,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Don't redirect on 401 for login/register pages
+    // Handle 401 Unauthorized - only redirect if user is truly not authenticated
     if (error.response?.status === 401) {
-      const currentPath = window.location.pathname;
-      if (currentPath !== '/login' && currentPath !== '/register') {
+      const token = localStorage.getItem('token');
+      
+      console.warn('[Axios] 401 Unauthorized', {
+        url: error.config?.url,
+        hasToken: !!token,
+      });
+
+      // Only redirect if user doesn't have a token (actually unauthenticated)
+      // If they have a token, API is rejecting for other reasons - use fallback data
+      if (!token) {
+        console.log('[Axios] No token found, redirecting to login');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
+      } else {
+        console.warn('[Axios] Token exists but API returned 401. Using mock data fallback.');
       }
     }
     return Promise.reject(error);
