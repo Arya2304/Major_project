@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Loader from '../components/common/Loader';
 import './Auth.css';
@@ -11,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +21,9 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result.success) {
-      navigate('/dashboard');
+      // Redirect to the page user was trying to access, or dashboard
+      const from = searchParams.get('from') || '/dashboard';
+      navigate(from);
     } else {
       // Better error message extraction
       let errorMsg = 'Login failed. Please try again.';

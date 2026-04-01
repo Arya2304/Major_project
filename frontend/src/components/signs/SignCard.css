@@ -1,19 +1,21 @@
 .sign-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.08);
   transition: all 0.3s ease;
   text-decoration: none;
   color: inherit;
+  border: 1px solid #f3f4f6;
 }
 
 .sign-card:hover,
 .sign-card:focus {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  outline: 3px solid #4a90e2;
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 155, 222, 0.15);
+  outline: 2px solid #009bde;
   outline-offset: 2px;
 }
 
@@ -21,7 +23,7 @@
   position: relative;
   width: 100%;
   height: 200px;
-  background: #f8f9fa;
+  background: linear-gradient(135deg, #640487 0%, #9d4edd 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,30 +37,35 @@
 }
 
 .sign-placeholder {
-  font-size: 4rem;
+  font-size: 4.5rem;
+  opacity: 0.9;
 }
 
 .sign-language-badge {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: #4a90e2;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: #009bde;
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
+  padding: 0.35rem 0.9rem;
+  border-radius: 24px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 155, 222, 0.3);
 }
 
 .sign-card-content {
-  padding: 1.5rem;
+  padding: 1.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .sign-word {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 0 0 0.75rem 0;
-  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #002f87;
 }
 
 .sign-meta {
@@ -66,18 +73,20 @@
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .difficulty-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 0.9rem;
   border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .difficulty-1 {
-  background: #d4edda;
-  color: #155724;
+  background: #dcfce7;
+  color: #166534;
+}
 }
 
 .difficulty-2 {

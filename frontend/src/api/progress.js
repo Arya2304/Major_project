@@ -6,6 +6,11 @@ export const progressAPI = {
     return response.data;
   },
 
+  getLessonProgress: async (lessonId) => {
+    const response = await api.get(`/progress/lessons/${lessonId}/`);
+    return response.data;
+  },
+
   updateSignProgress: async (signId, data) => {
     const response = await api.post(`/progress/signs/${signId}/update/`, data);
     return response.data;
@@ -21,6 +26,11 @@ export const progressAPI = {
     return response.data;
   },
 
+  createLessonProgress: async (lessonId, data) => {
+    const response = await api.post('/progress/lessons/', { lesson_id: lessonId, ...data });
+    return response.data;
+  },
+
   getSignProgress: async () => {
     const response = await api.get('/progress/signs/');
     return response.data;
@@ -28,6 +38,11 @@ export const progressAPI = {
 
   getVideoProgress: async () => {
     const response = await api.get('/progress/videos/');
+    return response.data;
+  },
+
+  getAllLessonProgress: async () => {
+    const response = await api.get('/progress/lessons/');
     return response.data;
   },
 };

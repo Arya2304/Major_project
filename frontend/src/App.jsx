@@ -2,9 +2,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import Navbar from './components/common/Navbar';
-import IconNavigation from './components/common/IconNavigation';
-import Footer from './components/common/Footer';
 import KeyboardShortcuts from './components/common/KeyboardShortcuts';
 import AppRoutes from './routes/AppRoutes';
 import './styles/main.css';
@@ -50,6 +47,18 @@ const KeyboardNavigation = ({ children }) => {
             navigate('/dashboard');
           }
           break;
+        case 'l':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            navigate('/learn');
+          }
+          break;
+        case '?':
+          if (!e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            // Open keyboard shortcuts help
+          }
+          break;
         default:
           break;
       }
@@ -67,26 +76,17 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <KeyboardNavigation>
-          <div className="app min-h-screen flex flex-col">
-            {/* Skip to main content link */}
-            <a href="#main-content" className="skip-link">
-              Skip to main content
-            </a>
+          {/* Skip to main content link */}
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
 
-            <Navbar />
-            
-            <main id="main-content" className="main-content flex-1 pb-24">
-              <AppRoutes />
-            </main>
+          <main id="main-content">
+            <AppRoutes />
+          </main>
 
-            <Footer />
-            
-            {/* Icon-based bottom navigation */}
-            <IconNavigation />
-            
-            {/* Keyboard shortcuts help */}
-            <KeyboardShortcuts />
-          </div>
+          {/* Keyboard shortcuts help */}
+          <KeyboardShortcuts />
         </KeyboardNavigation>
       </BrowserRouter>
     </AuthProvider>

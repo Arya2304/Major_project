@@ -1,81 +1,93 @@
 .course-detail-page {
   min-height: 100vh;
   padding: 2rem;
-  background: #f8f9fa;
+  background: #f9fafb;
 }
 
 .course-header {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.08);
+  border: 1px solid #f3f4f6;
 }
 
 .course-header-content {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 2rem;
+  grid-template-columns: 320px 1fr;
+  gap: 2.5rem;
 }
 
 .course-thumbnail-large {
   width: 100%;
-  height: 200px;
+  height: 220px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.12);
 }
 
 .course-title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   margin: 0 0 1rem 0;
-  color: #2c3e50;
+  color: #002f87;
+  font-weight: 900;
 }
 
 .course-description {
   font-size: 1.1rem;
-  color: #666;
-  line-height: 1.6;
+  color: #6b7280;
+  line-height: 1.8;
   margin: 0 0 1.5rem 0;
+  font-weight: 500;
 }
 
 .course-meta-info {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .meta-badge {
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  background: #dbeafe;
+  color: #009bde;
+  padding: 0.6rem 1.2rem;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.meta-badge:hover {
+  background: #bfdbfe;
 }
 
 .lessons-section {
   background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.08);
+  border: 1px solid #f3f4f6;
 }
 
 .section-title {
-  font-size: 2rem;
-  margin: 0 0 2rem 0;
-  color: #2c3e50;
+  font-size: 2.2rem;
+  margin: 0 0 2.5rem 0;
+  color: #002f87;
+  font-weight: 900;
 }
 
 .lessons-list {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 1.5rem;
 }
 
 .lesson-item {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e5e7eb;
   padding-bottom: 2rem;
+  transition: all 0.2s ease;
 }
 
 .lesson-item:last-child {

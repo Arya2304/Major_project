@@ -1,9 +1,7 @@
-import './Loader.css';
-
 const Loader = () => {
   return (
-    <div className="loader-container" role="status" aria-label="Loading">
-      <div className="loader"></div>
+    <div className="flex justify-center items-center min-h-[200px] w-full" role="status" aria-label="Loading">
+      <div className="w-16 h-16 border-4 border-gray-200 border-t-primary-500 rounded-full animate-spin"></div>
     </div>
   );
 };

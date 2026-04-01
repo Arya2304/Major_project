@@ -8,11 +8,13 @@ import { forwardRef } from 'react';
  * - Keyboard navigation
  */
 const AccessibleCard = forwardRef(
+const AccessibleCard = forwardRef(
   (
     {
       children,
       onClick,
       href,
+      variant = 'default',
       className = '',
       'aria-label': ariaLabel,
       'aria-describedby': ariaDescribedBy,
@@ -21,9 +23,13 @@ const AccessibleCard = forwardRef(
     },
     ref
   ) => {
+    const variantClasses = {
+      default: 'bg-white rounded-xl p-6 shadow-md hover:shadow-lg border-2 border-transparent',
+      interactive: 'bg-white rounded-xl p-6 shadow-md border-2 border-transparent cursor-pointer hover:shadow-lg hover:border-primary-300 hover:bg-primary-50 transition-all active:shadow-sm',
+    };
+
     const baseClasses = `
-      card
-      ${onClick || href ? 'cursor-pointer' : ''}
+      ${variantClasses[variant] || variantClasses.default}
       ${className}
     `.trim().replace(/\s+/g, ' ');
 

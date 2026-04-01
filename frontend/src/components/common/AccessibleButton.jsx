@@ -30,16 +30,16 @@ const AccessibleButton = forwardRef(
       font-bold text-lg
       rounded-xl
       transition-all duration-200
-      focus-visible:ring-4 focus-visible:ring-primary-300 focus-visible:ring-offset-2
+      focus-visible:ring-4 focus-visible:ring-primary-200 focus-visible:ring-offset-2
       disabled:opacity-50 disabled:cursor-not-allowed
       min-h-[56px] min-w-[56px]
     `;
 
     const variantClasses = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800',
-      secondary: 'bg-bg-accent text-text-primary border-2 border-primary-600 hover:bg-primary-50',
-      danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
-      ghost: 'bg-transparent text-text-primary hover:bg-bg-accent',
+      primary: 'bg-primary-500 text-white hover:bg-primary-600 active:bg-primary-700 shadow-md hover:shadow-lg',
+      secondary: 'bg-dark-500 text-white hover:bg-dark-600 active:bg-dark-700 shadow-md hover:shadow-lg',
+      ghost: 'bg-transparent text-primary-500 border-2 border-primary-500 hover:bg-primary-50 active:bg-primary-100',
+      danger: 'bg-error-500 text-white hover:bg-error-600 active:bg-error-700 shadow-md hover:shadow-lg',
     };
 
     const sizeClasses = {

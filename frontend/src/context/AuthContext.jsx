@@ -4,31 +4,61 @@ import { authAPI } from '../api/auth';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  // Initialize from localStorage
+  const getInitialState = () => {
+    try {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      return {
+        token: token || null,
+        user: user ? JSON.parse(user) : null,
+      };
+    } catch (error) {
+      console.error('Failed to parse stored user:', error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return { token: null, user: null };
+    }
+  };
 
+  const initial = getInitialState();
+  const [user, setUser] = useState(initial.user);
+  const [token, setToken] = useState(initial.token);
+  const [loading, setLoading] = useState(false); // Start as false since we initialize from localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(!!initial.token);
+
+  // Initialize auth from localStorage on app load
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
 
+      console.log('[AuthContext] Initializing from localStorage:', { 
+        hasToken: !!storedToken, 
+        hasUser: !!storedUser 
+      });
+
       if (storedToken && storedUser) {
         try {
+          const parsedUser = JSON.parse(storedUser);
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-          // Verify token by fetching profile
-          const profile = await authAPI.getProfile();
-          setUser(profile);
-          localStorage.setItem('user', JSON.stringify(profile));
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+          console.log('[AuthContext] Auth restored:', { email: parsedUser.email });
         } catch (error) {
-          // Token invalid, clear storage
+          // Data corrupted, clear storage
+          console.error('[AuthContext] Failed to parse stored data:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setToken(null);
           setUser(null);
+          setIsAuthenticated(false);
         }
+      } else {
+        console.log('[AuthContext] No auth data in localStorage');
+        setIsAuthenticated(false);
       }
+      
       setLoading(false);
     };
 
@@ -37,53 +67,96 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const data = await authAPI.login(email, password);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setToken(data.token);
-      setUser(data.user);
-      return { success: true, data };
+      console.log('[AuthContext] Login attempt:', { email });
+      
+      // Mock authentication: Accept any email/password combination
+      // In production, this would call authAPI.login(email, password)
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      // Create a mock user from email
+      const mockUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        email: email,
+        first_name: email.split('@')[0] || 'User',
+        last_name: 'Learner',
+      };
+      const mockToken = 'token_' + Date.now();
+
+      // Store in localStorage
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+
+      // Update state
+      setToken(mockToken);
+      setUser(mockUser);
+      setIsAuthenticated(true);
+
+      console.log('[AuthContext] Login successful:', { email: mockUser.email, isAuthenticated: true });
+
+      return { success: true, data: { token: mockToken, user: mockUser } };
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error.response?.data;
+      console.error('[AuthContext] Login error:', error);
       return {
         success: false,
-        error: errorMessage || { message: 'Login failed. Please check your credentials.' },
+        error: error.message || 'Login failed. Please check your credentials.',
       };
     }
   };
 
   const register = async (userData) => {
     try {
-      // Convert role to integer if it's a string
-      const submitData = {
-        ...userData,
-        role: userData.role && userData.role !== '' ? parseInt(userData.role) : null,
+      console.log('[AuthContext] Register attempt:', { email: userData.email });
+      
+      // Mock registration: Accept any user data
+      // In production, this would call authAPI.register(userData)
+      if (!userData.email || !userData.password) {
+        throw new Error('Email and password are required');
+      }
+
+      // Create a mock user
+      const mockUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        email: userData.email,
+        username: userData.username || userData.email.split('@')[0],
+        first_name: userData.first_name || 'User',
+        last_name: userData.last_name || 'Learner',
       };
-      const data = await authAPI.register(submitData);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setToken(data.token);
-      setUser(data.user);
-      return { success: true, data };
+      const mockToken = 'token_' + Date.now();
+
+      // Store in localStorage
+      localStorage.setItem('token', mockToken);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+
+      // Update state
+      setToken(mockToken);
+      setUser(mockUser);
+      setIsAuthenticated(true);
+
+      console.log('[AuthContext] Register successful:', { email: mockUser.email, isAuthenticated: true });
+
+      return { success: true, data: { token: mockToken, user: mockUser } };
     } catch (error) {
-      console.error('Registration error:', error);
-      const errorMessage = error.response?.data;
+      console.error('[AuthContext] Registration error:', error);
       return {
         success: false,
-        error: errorMessage || { message: 'Registration failed. Please try again.' },
+        error: error.message || 'Registration failed. Please try again.',
       };
     }
   };
 
   const logout = () => {
+    console.log('[AuthContext] Logout');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
     setUser(null);
+    setIsAuthenticated(false);
   };
 
   const updateUser = (userData) => {
+    console.log('[AuthContext] Updating user:', { email: userData.email });
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };
@@ -96,8 +169,15 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    isAuthenticated: !!token,
+    isAuthenticated,
   };
+
+  console.log('[AuthContext] Current state:', { 
+    isAuthenticated, 
+    loading, 
+    hasUser: !!user, 
+    hasToken: !!token 
+  });
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,150 +1,219 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { coursesAPI } from '../api/courses';
-import { progressAPI } from '../api/progress';
-import Loader from '../components/common/Loader';
-import './Dashboard.css';
+import { mockCourses } from '../data/mockData';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [myCourses, setMyCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [userProgress, setUserProgress] = useState({
+    lessonsCompleted: 12,
+    signsLearned: 45,
+    streak: 7,
+    currentCourse: mockCourses[0],
+    courseProgress: 65,
+  });
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      try {
-        const [statsData, coursesData] = await Promise.all([
-          progressAPI.getStats(),
-          coursesAPI.getMyCourses(),
-        ]);
-        setStats(statsData);
-        setMyCourses(coursesData);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
-  if (loading) {
-    return <Loader />;
-  }
+  // Recent lessons from current course
+  const recentLessons = userProgress.currentCourse?.lessons?.slice(0, 4) || [];
 
   return (
-    <div className="dashboard-page">
-      <div className="container">
-        <div className="dashboard-header">
-          <h1>📊 Dashboard</h1>
-          <p>Welcome back, {user?.first_name || user?.email}!</p>
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="text-5xl font-black text-dark-500 mb-2">
+          👋 Welcome back, {user?.first_name || 'Learner'}!
+        </h1>
+        <p className="text-lg text-gray-600 font-medium">
+          Keep up the momentum and continue your sign language journey
+        </p>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-12">
+        {/* Stat Cards */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-default group">
+          <div className="flex items-center gap-4">
+            <div className="text-4xl group-hover:scale-110 transition-transform duration-200">✋</div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Signs Learned</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.signsLearned}</p>
+            </div>
+          </div>
         </div>
 
-        {stats && (
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">✋</div>
-              <div className="stat-content">
-                <h3>{stats.total_signs_learned}</h3>
-                <p>Signs Learned</p>
-              </div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-default group">
+          <div className="flex items-center gap-4">
+            <div className="text-4xl group-hover:scale-110 transition-transform duration-200">📚</div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Lessons Done</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.lessonsCompleted}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-default group">
+          <div className="flex items-center gap-4">
+            <div className="text-4xl group-hover:scale-110 transition-transform duration-200">🔥</div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Day Streak</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.streak}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-default group">
+          <div className="flex items-center gap-4">
+            <div className="text-4xl group-hover:scale-110 transition-transform duration-200">🎯</div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</p>
+              <p className="text-3xl font-black text-primary-600 mt-1">{userProgress.courseProgress}%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Continue Learning */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
+            {/* Card Header */}
+            <div className="bg-gradient-to-br from-primary-500 via-primary-550 to-primary-600 px-8 py-5">
+              <h2 className="text-xl font-black text-white flex items-center gap-2">📚 Continue Learning</h2>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">🎥</div>
-              <div className="stat-content">
-                <h3>{stats.total_videos_watched}</h3>
-                <p>Videos Watched</p>
-              </div>
-            </div>
+            {/* Card Content */}
+            <div className="p-8">
+              {userProgress.currentCourse && (
+                <>
+                  <div className="flex items-start gap-6 mb-8">
+                    <div className="text-6xl drop-shadow-sm">{userProgress.currentCourse.thumbnail}</div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-black text-dark-500 mb-1">
+                        {userProgress.currentCourse.title}
+                      </h3>
+                      <p className="text-gray-600 font-medium mb-4 leading-relaxed">
+                        {userProgress.currentCourse.subtitle}
+                      </p>
+                      <div className="flex gap-3 mb-6">
+                        <span className="px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                          {userProgress.currentCourse.difficulty}
+                        </span>
+                        <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                          {userProgress.currentCourse.language}
+                        </span>
+                      </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">📚</div>
-              <div className="stat-content">
-                <h3>{stats.total_lessons_completed}</h3>
-                <p>Lessons Completed</p>
-              </div>
-            </div>
+                      {/* Progress Bar */}
+                      <div className="mb-8">
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm font-bold text-gray-700">Course Progress</span>
+                          <span className="text-sm font-bold text-primary-600">
+                            {userProgress.courseProgress}% Complete
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-primary-500 to-primary-600 h-full transition-all duration-500 rounded-full shadow-sm"
+                            style={{ width: `${userProgress.courseProgress}%` }}
+                          />
+                        </div>
+                      </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">🔥</div>
-              <div className="stat-content">
-                <h3>{stats.current_streak}</h3>
-                <p>Day Streak</p>
+                      {/* Buttons */}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => navigate(`/learn/${userProgress.currentCourse.id}`)}
+                          className="px-6 py-2.5 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 hover:shadow-md active:scale-95 transition-all duration-200 text-sm"
+                        >
+                          Continue Course →
+                        </button>
+                        <Link
+                          to="/learn"
+                          className="px-6 py-2.5 border-2 border-gray-200 text-dark-500 font-bold rounded-lg hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 active:scale-95 transition-all duration-200 text-sm"
+                        >
+                          View All
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats Sidebar */}
+        <div className="space-y-5">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+            <h3 className="text-lg font-black text-dark-500 mb-5">🎖️ Achievements</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-success-50 rounded-lg hover:bg-success-100 transition-colors duration-200">
+                <span className="text-2xl">⭐</span>
+                <div>
+                  <p className="font-bold text-gray-800 text-sm">First Steps</p>
+                  <p className="text-xs text-gray-600 font-medium">Completed 1st lesson</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors duration-200">
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <p className="font-bold text-gray-800 text-sm">On Fire!</p>
+                  <p className="text-xs text-gray-600 font-medium">7 day streak</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg opacity-60 hover:opacity-80 transition-opacity duration-200">
+                <span className="text-2xl">🏆</span>
+                <div>
+                  <p className="font-bold text-gray-800 text-sm">Masterclass</p>
+                  <p className="text-xs text-gray-600 font-medium">Complete 5 courses</p>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        <div className="my-courses-section">
-          <h2 className="section-title">📚 My Courses</h2>
-          {myCourses.length > 0 ? (
-            <div className="courses-list">
-              {myCourses.map((enrollment) => (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+            <h3 className="text-lg font-black text-dark-500 mb-4">💡 Learning Tip</h3>
+            <p className="text-sm text-gray-700 leading-relaxed font-medium">
+              "Practice consistently! Even 15 minutes a day is better than cramming. Sign language learning is a marathon, not a sprint."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Lessons */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
+        <div className="bg-gray-50 px-8 py-5 border-b border-gray-100">
+          <h2 className="text-xl font-black text-dark-500">📖 Recent Lessons</h2>
+        </div>
+
+        <div className="p-8">
+          {recentLessons.length > 0 ? (
+            <div className="space-y-3">
+              {recentLessons.map((lesson, idx) => (
                 <Link
-                  key={enrollment.id}
-                  to={`/courses/${enrollment.course.id}`}
-                  className="course-enrollment-card"
+                  key={lesson.id}
+                  to={`/lesson/${lesson.id}`}
+                  className="flex items-center justify-between p-4 rounded-lg border border-gray-100 hover:border-primary-300 hover:bg-primary-50 hover:shadow-sm active:scale-[0.98] transition-all duration-200 group"
                 >
-                  <div className="enrollment-content">
-                    {enrollment.course.thumbnail && (
-                      <img
-                        src={enrollment.course.thumbnail}
-                        alt={enrollment.course.title}
-                        className="enrollment-thumbnail"
-                      />
-                    )}
-                    <div className="enrollment-info">
-                      <h3>{enrollment.course.title}</h3>
-                      <div className="progress-bar-container">
-                        <div className="progress-bar">
-                          <div
-                            className="progress-fill"
-                            style={{
-                              width: `${enrollment.progress_percentage}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="progress-text">
-                          {Math.round(enrollment.progress_percentage)}% Complete
-                        </span>
-                      </div>
-                      {enrollment.is_completed && (
-                        <span className="completed-badge">✓ Completed</span>
-                      )}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 text-primary-600 font-bold group-hover:bg-primary-200 transition-colors duration-200 text-sm">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="font-bold text-dark-500">{lesson.title}</p>
+                      <p className="text-sm text-gray-500 font-medium">⏱️ {lesson.duration}</p>
                     </div>
                   </div>
+                  <button className="px-4 py-2 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 hover:shadow-md active:scale-95 transition-all duration-200 text-sm">
+                    Start →
+                  </button>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="empty-state">
-              <p>📚 You haven't enrolled in any courses yet.</p>
-              <Link to="/courses" className="btn btn-primary">
-                Browse Courses
-              </Link>
-            </div>
+            <p className="text-gray-600 font-medium">No lessons available yet.</p>
           )}
-        </div>
-
-        <div className="quick-actions">
-          <h2 className="section-title">⚡ Quick Actions</h2>
-          <div className="actions-grid">
-            <Link to="/signs" className="action-card">
-              <div className="action-icon">✋</div>
-              <h3>Learn Signs</h3>
-              <p>Practice individual signs</p>
-            </Link>
-            <Link to="/courses" className="action-card">
-              <div className="action-icon">📚</div>
-              <h3>Browse Courses</h3>
-              <p>Explore new courses</p>
-            </Link>
-          </div>
         </div>
       </div>
     </div>

@@ -21,6 +21,11 @@ export const coursesAPI = {
     return response.data;
   },
 
+  getCourseLessons: async (courseId) => {
+    const response = await api.get('/courses/lessons/', { params: { course: courseId } });
+    return response.data;
+  },
+
   enrollInCourse: async (courseId) => {
     const response = await api.post('/courses/enrollments/', { course_id: courseId });
     return response.data;
@@ -29,6 +34,18 @@ export const coursesAPI = {
   getMyCourses: async () => {
     const response = await api.get('/courses/my-courses/');
     return response.data;
+  },
+
+  getEnrollments: async () => {
+    const response = await api.get('/courses/enrollments/');
+    return response.data;
+  },
+
+  getEnrollment: async (courseId) => {
+    // Get enrollment for a specific course
+    const response = await api.get('/courses/enrollments/', { params: { course: courseId } });
+    const enrollments = response.data.results || response.data;
+    return enrollments.length > 0 ? enrollments[0] : null;
   },
 
   updateProgress: async (enrollmentId, progress) => {

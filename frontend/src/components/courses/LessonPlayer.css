@@ -1,8 +1,9 @@
 .lesson-player-container {
   background: #000;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.12);
 }
 
 .video-wrapper {
@@ -34,37 +35,39 @@
 }
 
 .play-pause-btn {
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
+  background: rgba(0, 155, 222, 0.8);\n  border: none;
   border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  font-size: 2rem;
+  width: 90px;
+  height: 90px;
+  font-size: 2.5rem;
   cursor: pointer;
   pointer-events: all;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  box-shadow: 0 8px 25px rgba(0, 155, 222, 0.4);
 }
 
 .play-pause-btn:hover,
 .play-pause-btn:focus {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 155, 222, 1);
   transform: scale(1.1);
-  outline: 3px solid #4a90e2;
-  outline-offset: 2px;
+  outline: 2px solid #009bde;
+  outline-offset: 2px;\n  box-shadow: 0 12px 35px rgba(0, 155, 222, 0.6);
 }
 
 .lesson-info {
-  padding: 1.5rem;
-  background: white;
+  padding: 1.75rem;
+  background: white;\n  border-top: 1px solid #f3f4f6;
 }
 
 .lesson-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   margin: 0 0 0.75rem 0;
-  color: #2c3e50;
+  color: #002f87;
+  font-weight: 900;
 }
 
 .lesson-description {
