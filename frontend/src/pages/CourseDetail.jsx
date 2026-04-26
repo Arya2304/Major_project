@@ -32,26 +32,15 @@ const CourseDetail = () => {
           return;
         }
 
-        if (isDashboard) {
-          // Use mock data for dashboard
-          console.log('[CourseDetail] Loading dashboard course:', paramId);
-          const mockCourse = getCourseById(parseInt(paramId));
-          if (mockCourse) {
-            setCourse(mockCourse);
-            setLessons(mockCourse.lessons || []);
-            console.log('[CourseDetail] Course loaded from mock data:', mockCourse.title);
-          } else {
-            console.error('[CourseDetail] Course not found in mock data:', paramId);
-          }
+        // Always use mock data for both dashboard and public pages (Phase 1-5 development)
+        console.log('[CourseDetail] Loading course from mock data:', paramId);
+        const mockCourse = getCourseById(parseInt(paramId));
+        if (mockCourse) {
+          setCourse(mockCourse);
+          setLessons(mockCourse.lessons || []);
+          console.log('[CourseDetail] Course loaded from mock data:', mockCourse.title);
         } else {
-          // Use API for public course detail
-          console.log('[CourseDetail] Loading public course via API:', id);
-          const [courseData, lessonsData] = await Promise.all([
-            coursesAPI.getCourse(id),
-            coursesAPI.getLessons({ course: id }),
-          ]);
-          setCourse(courseData);
-          setLessons(lessonsData.results || lessonsData);
+          console.error('[CourseDetail] Course not found in mock data:', paramId);
         }
 
         // Fetch enrollment and progress data for dashboard

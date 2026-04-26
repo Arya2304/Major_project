@@ -1,0 +1,244 @@
+/**
+ * StreakCounter.css — Phase 5
+ * Streak display styling and animations
+ * Compact navbar version and full card version with calendar
+ */
+
+/* ============================================
+   COMPACT VERSION (for navbar)
+   ============================================ */
+
+.streak-counter-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border-radius: 2rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #b45309;
+  cursor: default;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);
+}
+
+.streak-counter-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+
+.streak-counter-compact .flame-emoji {
+  font-size: 1.2rem;
+  animation: flameFlicker 1.5s ease-in-out infinite;
+}
+
+@keyframes flameFlicker {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-2deg);
+  }
+  50% {
+    transform: scale(0.95) rotate(2deg);
+  }
+  75% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+}
+
+.streak-counter-compact .streak-number {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* ============================================
+   FULL VERSION (for Learn page card)
+   ============================================ */
+
+.streak-counter-full {
+  width: 100%;
+}
+
+.streak-card {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  border: 2px solid #fef3c7;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.08);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header Section */
+.streak-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #fef3c7;
+}
+
+.flame-large {
+  font-size: 3rem;
+  animation: flameBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes flameBounce {
+  0% {
+    transform: scale(0) rotate(-20deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #b45309;
+  margin: 0 0 0.25rem 0;
+}
+
+.streak-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Calendar Strip */
+.calendar-strip {
+  margin-bottom: 1.5rem;
+}
+
+.calendar-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.75rem;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.calendar-day.active {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border: 2px solid #fcd34d;
+}
+
+.calendar-day.missed {
+  background: #f3f4f6;
+  border: 2px solid #e5e7eb;
+}
+
+.day-letter {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4b5563;
+  text-transform: uppercase;
+}
+
+.day-indicator {
+  font-size: 1rem;
+  color: #f97316;
+}
+
+.calendar-day.missed .day-indicator {
+  color: #d1d5db;
+}
+
+/* Motivation Section */
+.motivation-section {
+  padding-top: 1.5rem;
+  border-top: 2px solid #f3f4f6;
+}
+
+.motivation-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .streak-card {
+    padding: 1.5rem;
+  }
+
+  .streak-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .streak-title {
+    font-size: 1.25rem;
+  }
+
+  .flame-large {
+    font-size: 2.5rem;
+  }
+
+  .calendar-days {
+    gap: 0.5rem;
+  }
+
+  .calendar-day {
+    padding: 0.5rem;
+  }
+
+  .day-letter {
+    font-size: 0.625rem;
+  }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .streak-counter-compact .flame-emoji,
+  .flame-large,
+  .streak-card {
+    animation: none;
+    transform: none;
+  }
+
+  .streak-counter-compact:hover {
+    transform: none;
+  }
+}

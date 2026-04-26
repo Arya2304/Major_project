@@ -76,6 +76,103 @@ export const mockCourses = [
       { id: 16, title: 'Interpreting Techniques', duration: '42 min', videoUrl: 'asl-interpreting' },
     ],
   },
+  {
+    id: 5,
+    title: 'ISL Basics',
+    subtitle: 'Learn fundamental Indian Sign Language',
+    description: 'Start your journey with the fundamentals of Indian Sign Language. Learn the ISL alphabet, numbers, greetings, and family vocabulary. Comprehensive introduction to India\'s primary sign language.',
+    language: 'ISL',
+    difficulty: 'Beginner',
+    duration: '6 weeks',
+    instructor: 'Priya Sharma',
+    thumbnail: '🇮🇳',
+    students: 3200,
+    rating: 4.9,
+    lessons: [
+      { id: 17, title: 'Introduction to ISL', duration: '15 min', videoUrl: 'isl-intro' },
+      { id: 18, title: 'ISL Alphabet A-M', duration: '25 min', videoUrl: 'isl-alpha-am' },
+      { id: 19, title: 'ISL Alphabet N-Z', duration: '25 min', videoUrl: 'isl-alpha-nz' },
+      { id: 20, title: 'Numbers 1-20', duration: '20 min', videoUrl: 'isl-numbers' },
+      { id: 21, title: 'Basic Greetings', duration: '22 min', videoUrl: 'isl-greetings' },
+      { id: 22, title: 'Family Members', duration: '24 min', videoUrl: 'isl-family' },
+    ],
+  },
+  {
+    id: 6,
+    title: 'ISL Daily Life',
+    subtitle: 'Learn signs for everyday situations',
+    description: 'Master essential ISL vocabulary for daily life situations including market interactions, transportation, healthcare, and workplace communication. Perfect for intermediate learners.',
+    language: 'ISL',
+    difficulty: 'Intermediate',
+    duration: '8 weeks',
+    instructor: 'Arjun Mehta',
+    thumbnail: '🛒',
+    students: 1800,
+    rating: 4.7,
+    lessons: [
+      { id: 23, title: 'Market Signs', duration: '28 min', videoUrl: 'isl-market' },
+      { id: 24, title: 'Transportation Vocabulary', duration: '30 min', videoUrl: 'isl-transport' },
+      { id: 25, title: 'Healthcare Communication', duration: '32 min', videoUrl: 'isl-healthcare' },
+      { id: 26, title: 'Workplace Signs', duration: '35 min', videoUrl: 'isl-workplace' },
+    ],
+  },
+  {
+    id: 7,
+    title: 'ISL Advanced Grammar',
+    subtitle: 'Master complex ISL linguistic structures',
+    description: 'Deepen your understanding of ISL through advanced grammatical concepts including topic-comment structure, classifiers, and spatial grammar. Ideal for advanced learners and aspiring ISL teachers.',
+    language: 'ISL',
+    difficulty: 'Advanced',
+    duration: '10 weeks',
+    instructor: 'Dr. Sunita Rao',
+    thumbnail: '📚',
+    students: 620,
+    rating: 4.8,
+    lessons: [
+      { id: 27, title: 'Topic-Comment Structure', duration: '40 min', videoUrl: 'isl-topic-comment' },
+      { id: 28, title: 'Classifiers in ISL', duration: '42 min', videoUrl: 'isl-classifiers' },
+      { id: 29, title: 'Spatial Grammar', duration: '45 min', videoUrl: 'isl-spatial' },
+      { id: 30, title: 'Complex Discourse', duration: '48 min', videoUrl: 'isl-discourse' },
+    ],
+  },
+  {
+    id: 8,
+    title: 'ASL Intermediate',
+    subtitle: 'Advance your American Sign Language skills',
+    description: 'Build on your ASL foundation with intermediate vocabulary, sentence structure, and conversational practice. Perfect for continuing learners ready to expand their signing abilities.',
+    language: 'ASL',
+    difficulty: 'Intermediate',
+    duration: '7 weeks',
+    instructor: 'David Williams',
+    thumbnail: '🤝',
+    students: 980,
+    rating: 4.6,
+    lessons: [
+      { id: 31, title: 'Intermediate Vocabulary', duration: '28 min', videoUrl: 'asl-vocab-int' },
+      { id: 32, title: 'Sentence Structure & Grammar', duration: '32 min', videoUrl: 'asl-structure' },
+      { id: 33, title: 'Conversational Practice', duration: '30 min', videoUrl: 'asl-convo' },
+      { id: 34, title: 'Question Formation', duration: '26 min', videoUrl: 'asl-questions' },
+    ],
+  },
+  {
+    id: 9,
+    title: 'BSL Intermediate',
+    subtitle: 'Progress your British Sign Language',
+    description: 'Continue your BSL journey with intermediate vocabulary, sentence structures, and practical communication scenarios. Designed for learners progressing beyond basics.',
+    language: 'BSL',
+    difficulty: 'Intermediate',
+    duration: '7 weeks',
+    instructor: 'Olivia Thompson',
+    thumbnail: '💬',
+    students: 740,
+    rating: 4.5,
+    lessons: [
+      { id: 35, title: 'Intermediate Vocabulary', duration: '28 min', videoUrl: 'bsl-vocab-int' },
+      { id: 36, title: 'BSL Grammar & Structure', duration: '32 min', videoUrl: 'bsl-structure' },
+      { id: 37, title: 'Practical Conversations', duration: '30 min', videoUrl: 'bsl-practical' },
+      { id: 38, title: 'Expressions & Idioms', duration: '28 min', videoUrl: 'bsl-idioms' },
+    ],
+  },
 ];
 
 // Mock dictionary data
@@ -194,7 +291,67 @@ export const getCourseById = (courseId) => {
   return mockCourses.find((c) => c.id === courseId);
 };
 
-// Get courses by language
+// Sign language metadata
+export const SIGN_LANGUAGES = {
+  ISL: {
+    code: 'ISL',
+    name: 'Indian Sign Language',
+    country: 'India',
+    flag: '🇮🇳',
+    color: '#F97316',
+    bgColor: '#FFF7ED',
+    borderColor: '#FB923C',
+    textColor: '#9A3E09',
+    description: 'The primary sign language of the Indian Deaf community, recognized as an official language.',
+    speakers: '5 million+',
+    region: 'India',
+  },
+  ASL: {
+    code: 'ASL',
+    name: 'American Sign Language',
+    country: 'United States',
+    flag: '🇺🇸',
+    color: '#2563EB',
+    bgColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+    textColor: '#1E40AF',
+    description: 'The most widely used sign language in North America, with its own distinct grammar.',
+    speakers: '2 million+',
+    region: 'North America',
+  },
+  BSL: {
+    code: 'BSL',
+    name: 'British Sign Language',
+    country: 'United Kingdom',
+    flag: '🇬🇧',
+    color: '#DC2626',
+    bgColor: '#FFF1F2',
+    borderColor: '#F87171',
+    textColor: '#991B1B',
+    description: 'The sign language of the British Deaf community, officially recognized in the UK since 2003.',
+    speakers: '250,000+',
+    region: 'United Kingdom',
+  },
+};
+
+// Get courses by language (or all if language is null or 'ALL')
+export const getLanguageCourses = (language = null) => {
+  if (!language || language === 'ALL') return mockCourses;
+  return mockCourses.filter(c => c.language === language);
+};
+
+// Get language statistics
+export const getLanguageStats = () => {
+  return Object.keys(SIGN_LANGUAGES).map(lang => ({
+    ...SIGN_LANGUAGES[lang],
+    courseCount: mockCourses.filter(c => c.language === lang).length,
+    totalStudents: mockCourses
+      .filter(c => c.language === lang)
+      .reduce((sum, c) => sum + (c.students || 0), 0),
+  }));
+};
+
+// Get courses by language (legacy function - kept for backward compatibility)
 export const getCoursesByLanguage = (language) => {
   return mockCourses.filter((c) => c.language === language);
 };

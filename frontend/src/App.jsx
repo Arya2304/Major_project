@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import KeyboardShortcuts from './components/common/KeyboardShortcuts';
@@ -7,7 +7,7 @@ import AppRoutes from './routes/AppRoutes';
 import './styles/main.css';
 
 // Keyboard navigation wrapper component
-const KeyboardNavigation = ({ children }) => {
+const KeyboardNavigation = ({ children, onShortcutsToggle }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const KeyboardNavigation = ({ children }) => {
         case '?':
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
-            // Open keyboard shortcuts help
+            onShortcutsToggle();
           }
           break;
         default:
@@ -66,16 +66,22 @@ const KeyboardNavigation = ({ children }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate]);
+  }, [navigate, onShortcutsToggle]);
 
   return children;
 };
 
 function App() {
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  const toggleShortcuts = () => {
+    setIsShortcutsOpen((prev) => !prev);
+  };
+
   return (
     <AuthProvider>
       <BrowserRouter>
-        <KeyboardNavigation>
+        <KeyboardNavigation onShortcutsToggle={toggleShortcuts}>
           {/* Skip to main content link */}
           <a href="#main-content" className="skip-link">
             Skip to main content
@@ -85,8 +91,11 @@ function App() {
             <AppRoutes />
           </main>
 
-          {/* Keyboard shortcuts help */}
-          <KeyboardShortcuts />
+          {/* Keyboard shortcuts help modal */}
+          <KeyboardShortcuts 
+            isOpen={isShortcutsOpen}
+            onClose={() => setIsShortcutsOpen(false)}
+          />
         </KeyboardNavigation>
       </BrowserRouter>
     </AuthProvider>

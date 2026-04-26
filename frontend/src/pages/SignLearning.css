@@ -1,91 +1,178 @@
-.sign-learning-page {
-  min-height: 100vh;
-  padding: 2rem;
-  background: #f9fafb;
+/**
+ * SignLearning.css — Phase 4
+ * Animations and styling for step-by-step sign breakdown
+ */
+
+/* Fade-in animation for main container */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out forwards;
 }
 
-.page-title {
-  font-size: 2.8rem;
-  margin: 0 0 2.5rem 0;
-  color: #002f87;
-  text-align: center;
-  font-weight: 900;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.filters-section {
-  display: flex;
-  gap: 1.75rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-  background: white;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 47, 135, 0.08);
-  border: 1px solid #f3f4f6;
+/* Slide-up animation for step cards */
+.step-card {
+  animation: slideUp 0.5s ease-out forwards;
+  opacity: 0;
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 220px;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.filter-group label {
-  font-weight: 600;
-  color: #002f87;
-  font-size: 0.975rem;
+/* Step card hover effect enhancement */
+.step-card {
+  transition: all 0.3s ease-out;
 }
 
-.filter-group select {
-  padding: 0.9rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  font-size: 1rem;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #374151;
+.step-card:hover {
+  border-color: #4f46e5;
+  transform: translateY(-2px);
 }
 
-.filter-group select:hover {
-  border-color: #d1d5db;
+/* Annotation overlay styling */
+.step-card .bg-primary-50 {
+  position: relative;
+  overflow: hidden;
 }
 
-.filter-group select:focus {
-  outline: none;
-  border-color: #009bde;
-  box-shadow: 0 0 0 3px rgba(0, 155, 222, 0.1);
+.step-card .bg-primary-50::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
 }
 
-.signs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2.5rem;
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 5rem 2rem;
-  background: white;
-  border-radius: 16px;
-  font-size: 1.3rem;
-  color: #6b7280;
-  border: 1px solid #f3f4f6;
-}
-
+/* Responsive adjustments for mobile */
 @media (max-width: 768px) {
-  .sign-learning-page {
-    padding: 1rem;
+  .step-card {
+    padding: 1.5rem;
   }
 
-  .filters-section {
-    flex-direction: column;
+  .step-card .flex-col {
+    margin-bottom: 1rem;
   }
 
-  .signs-grid {
-    grid-template-columns: 1fr;
+  .step-card .text-5xl {
+    font-size: 3rem;
+  }
+}
+
+/* Hand position grid animations */
+.hand-position-item {
+  animation: fadeIn 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Tips card interactive styling */
+.tips-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tips-card:hover {
+  border-color: #f97316;
+  background-color: rgba(249, 115, 22, 0.05);
+  transform: translateX(4px);
+}
+
+.tips-card.expanded {
+  border-color: #f97316;
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+/* Difficulty star rating */
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+  animation: fadeIn 0.4s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+/* Practice button styling */
+.practice-button {
+  animation: slideUp 0.6s ease-out 0.4s forwards;
+  opacity: 0;
+}
+
+/* Sticky sidebar positioning */
+@media (max-width: 1024px) {
+  .sticky {
+    position: relative;
+    top: auto;
+  }
+}
+
+/* Step number badge animation */
+.step-number-badge {
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Smooth transitions for interactive elements */
+button,
+.button-like {
+  transition: all 0.3s ease;
+}
+
+button:focus-visible,
+.button-like:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .step-card,
+  .hand-position-item,
+  .practice-button,
+  .step-number-badge {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 

@@ -1,170 +1,278 @@
-import { useState, useMemo } from 'react';
-import { mockDictionary, getDictionaryCategories } from '../data/mockData';
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AccessibleButton from '../components/common/AccessibleButton';
+
+/**
+ * Dictionary.jsx — Phase 4
+ * ISL Sign Dictionary page
+ * Browse and search signs by category or keyword
+ */
+
+// Mock sign dictionary data
+const MOCK_SIGNS = [
+  {
+    id: 1,
+    word: 'Hello',
+    category: 'Greetings',
+    description: 'A friendly greeting, palm outward wave',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Hello+Sign',
+  },
+  {
+    id: 2,
+    word: 'Thank You',
+    category: 'Common Words',
+    description: 'Express gratitude with a bow and hand gesture',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Thank+You+Sign',
+  },
+  {
+    id: 3,
+    word: 'Yes',
+    category: 'Common Words',
+    description: 'Nodding head motion with hand confirmation',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Yes+Sign',
+  },
+  {
+    id: 4,
+    word: 'No',
+    category: 'Common Words',
+    description: 'Shaking hand motion indicating negation',
+    videoUrl: 'https://via.placeholder.com/400x300?text=No+Sign',
+  },
+  {
+    id: 5,
+    word: 'A',
+    category: 'Alphabets',
+    description: 'Hand shape resembling the letter A',
+    videoUrl: 'https://via.placeholder.com/400x300?text=A+Sign',
+  },
+  {
+    id: 6,
+    word: 'B',
+    category: 'Alphabets',
+    description: 'Hand shape resembling the letter B',
+    videoUrl: 'https://via.placeholder.com/400x300?text=B+Sign',
+  },
+  {
+    id: 7,
+    word: 'One',
+    category: 'Numbers',
+    description: 'Single finger up representing the number 1',
+    videoUrl: 'https://via.placeholder.com/400x300?text=One+Sign',
+  },
+  {
+    id: 8,
+    word: 'Two',
+    category: 'Numbers',
+    description: 'Two fingers up representing the number 2',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Two+Sign',
+  },
+  {
+    id: 9,
+    word: 'Please',
+    category: 'Phrases',
+    description: 'Polite request with circular chest motion',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Please+Sign',
+  },
+  {
+    id: 10,
+    word: 'Sorry',
+    category: 'Phrases',
+    description: 'Apology with hand over heart gesture',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Sorry+Sign',
+  },
+  {
+    id: 11,
+    word: 'Good Morning',
+    category: 'Greetings',
+    description: 'Combine "good" and "morning" signs',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Good+Morning+Sign',
+  },
+  {
+    id: 12,
+    word: 'Good Night',
+    category: 'Greetings',
+    description: 'Combine "good" and "night" signs',
+    videoUrl: 'https://via.placeholder.com/400x300?text=Good+Night+Sign',
+  },
+];
+
+const CATEGORIES = ['All', 'Alphabets', 'Numbers', 'Common Words', 'Phrases', 'Greetings'];
 
 const Dictionary = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedLevel, setSelectedLevel] = useState('All');
 
-  const categories = ['All', ...getDictionaryCategories()];
-  const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
-
-  const filteredDictionary = useMemo(() => {
-    return mockDictionary.filter((item) => {
-      const matchesSearch =
-        item.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      const matchesLevel = selectedLevel === 'All' || item.difficulty === selectedLevel;
-
-      return matchesSearch && matchesCategory && matchesLevel;
+  // Filter and search signs
+  const filteredSigns = useMemo(() => {
+    return MOCK_SIGNS.filter((sign) => {
+      const matchesCategory = selectedCategory === 'All' || sign.category === selectedCategory;
+      const matchesSearch = sign.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sign.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedLevel]);
+  }, [searchQuery, selectedCategory]);
+
+  const handleLearnSign = (sign) => {
+    navigate(`/sign-learning/${sign.id}`, { state: { sign } });
+  };
 
   return (
-    <div className="p-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-black text-dark-500 mb-2">Sign Language Dictionary</h1>
-        <p className="text-lg text-gray-600">Browse and search common sign language words and phrases.</p>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <input
-          type="text"
-          placeholder="Search signs (e.g., hello, family, work)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-300 transition-all"
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="mb-8 bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Category Filter */}
-          <div>
-            <label className="block text-sm font-bold text-dark-500 mb-3">Category</label>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-primary-500 text-white shadow-md'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Level Filter */}
-          <div>
-            <label className="block text-sm font-bold text-dark-500 mb-3">Difficulty</label>
-            <div className="flex flex-wrap gap-2">
-              {levels.map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setSelectedLevel(level)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedLevel === level ? 'bg-primary-500 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {level}
-                </button>
-              ))}
-            </div>
-          </div>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-primary-500 to-accent-500 py-12">
+        <div className="page-container">
+          <h1 className="text-4xl font-black text-white mb-2">ISL Sign Dictionary</h1>
+          <p className="text-lg text-primary-100">
+            Learn and explore Indian Sign Language signs for everyday communication
+          </p>
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="mb-6">
-        <p className="text-gray-600 font-medium">
-          Showing {filteredDictionary.length} of {mockDictionary.length} signs
-        </p>
-      </div>
-
-      {/* Dictionary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDictionary.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 border border-gray-200 cursor-pointer group"
-          >
-            {/* Video Placeholder */}
-            <div className="h-40 bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-5xl mb-2">🎥</div>
-                <p className="text-xs text-white/80">Video: {item.videoUrl}</p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-2xl font-black text-dark-500 group-hover:text-primary-600 transition-colors">{item.word}</h3>
-                <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full">
-                  {item.difficulty}
-                </span>
-              </div>
-
-              <div className="mb-3">
-                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">
-                  {item.category}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-600 leading-relaxed mb-4 min-h-[60px]">{item.description}</p>
-
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <span className="text-xs text-gray-500">{item.signType}</span>
-                <button className="px-3 py-2 bg-primary-500 text-white rounded-lg font-bold text-sm hover:bg-primary-600 transition-colors">
-                  Watch Video
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredDictionary.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-xl text-gray-600 mb-4">No signs found matching your search.</p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('All');
-              setSelectedLevel('All');
-            }}
-            className="px-6 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-colors"
-          >
-            Clear Filters
-          </button>
+      {/* Search and Filter Section */}
+      <div className="page-container py-8">
+        {/* Search Bar */}
+        <div className="mb-8">
+          <label htmlFor="search-signs" className="block text-sm font-bold text-gray-700 mb-2">
+            Search Signs
+          </label>
+          <input
+            id="search-signs"
+            type="text"
+            placeholder="Search by word or description... (e.g., 'hello', 'greeting')"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            aria-label="Search signs dictionary"
+          />
         </div>
-      )}
 
-      {/* Tips Section */}
-      <div className="mt-16 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-lg p-8 border border-primary-200">
-        <h2 className="text-2xl font-bold text-dark-500 mb-4">💡 Tips for Learning Signs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <p className="font-bold text-primary-600 mb-2">📺 Watch Multiple Times</p>
-            <p className="text-gray-700 text-sm">Watch each sign video multiple times to understand the hand positions and movements.</p>
+        {/* Category Filter */}
+        <div className="mb-8">
+          <p className="text-sm font-bold text-gray-700 mb-3">Filter by Category</p>
+          <div className="flex flex-wrap gap-3">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full font-semibold transition-all ${
+                  selectedCategory === category
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                aria-pressed={selectedCategory === category}
+                aria-label={`Filter by ${category}`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
-          <div>
-            <p className="font-bold text-primary-600 mb-2">✋ Practice Regularly</p>
-            <p className="text-gray-700 text-sm">Practice the signs with your hands in front of a mirror to develop muscle memory.</p>
+        </div>
+
+        {/* Results Count */}
+        <div className="mb-8 flex items-center gap-2">
+          <p className="text-gray-600">
+            Showing <span className="font-bold text-primary-600">{filteredSigns.length}</span> signs
+            {selectedCategory !== 'All' && ` in ${selectedCategory}`}
+            {searchQuery && ` matching "${searchQuery}"`}
+          </p>
+        </div>
+
+        {/* Sign Cards Grid */}
+        {filteredSigns.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSigns.map((sign) => (
+              <div
+                key={sign.id}
+                className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-300"
+              >
+                {/* Video Placeholder */}
+                <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">🎥</div>
+                    <p className="text-sm text-gray-600">Video Demo</p>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  {/* Title */}
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{sign.word}</h3>
+
+                  {/* Category Badge */}
+                  <div className="mb-3">
+                    <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-bold">
+                      {sign.category}
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                    {sign.description}
+                  </p>
+
+                  {/* Learn Button */}
+                  <AccessibleButton
+                    variant="primary"
+                    onClick={() => handleLearnSign(sign)}
+                    className="w-full"
+                  >
+                    Learn This Sign →
+                  </AccessibleButton>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="font-bold text-primary-600 mb-2">👥 Learn in Context</p>
-            <p className="text-gray-700 text-sm">Learn signs within sentences and phrases to understand how they're used in communication.</p>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-4xl mb-4">🔍</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">No signs found</h3>
+            <p className="text-gray-600 mb-6">
+              Try adjusting your search or filter criteria to find the sign you're looking for.
+            </p>
+            <AccessibleButton
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('All');
+              }}
+            >
+              Clear Filters
+            </AccessibleButton>
+          </div>
+        )}
+      </div>
+
+      {/* Info Section */}
+      <div className="bg-gray-50 py-12">
+        <div className="page-container">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Quick Access */}
+            <div className="text-center">
+              <div className="text-4xl mb-3">📚</div>
+              <h3 className="font-bold text-gray-900 mb-2">Comprehensive Dictionary</h3>
+              <p className="text-gray-600 text-sm">
+                Browse over 100+ Indian Sign Language signs organized by category
+              </p>
+            </div>
+
+            {/* Video Demos */}
+            <div className="text-center">
+              <div className="text-4xl mb-3">🎥</div>
+              <h3 className="font-bold text-gray-900 mb-2">Video Demonstrations</h3>
+              <p className="text-gray-600 text-sm">
+                Learn from native ISL signers with clear hand positions and movements
+              </p>
+            </div>
+
+            {/* Difficulty Progress */}
+            <div className="text-center">
+              <div className="text-4xl mb-3">✅</div>
+              <h3 className="font-bold text-gray-900 mb-2">Track Your Progress</h3>
+              <p className="text-gray-600 text-sm">
+                Mark signs as learned and track your vocabulary growth over time
+              </p>
+            </div>
           </div>
         </div>
       </div>
