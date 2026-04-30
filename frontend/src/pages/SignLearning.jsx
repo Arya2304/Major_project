@@ -117,7 +117,7 @@ const SignLearning = () => {
       <div className="bg-gradient-to-r from-primary-500 to-accent-500 py-8">
         <div className="page-container">
           <h1 className="text-4xl font-black text-white">
-            How to sign: <span className="block text-accent-100 mt-2">{sign.word}</span>
+            How to sign: <span className="block text-accent-100 mt-2">{sign.english || sign.word}</span>
           </h1>
           <p className="text-primary-100 mt-4 text-lg">Learn step-by-step from native ISL signers</p>
         </div>
@@ -133,7 +133,7 @@ const SignLearning = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">📹 Full Demonstration</h2>
               <AccessibleVideo
                 src={sign.videoUrl}
-                title={`How to sign ${sign.word}`}
+                title={`How to sign ${sign.english || sign.word}`}
               />
             </div>
 

@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import KeyboardShortcuts from './components/common/KeyboardShortcuts';
@@ -7,7 +7,7 @@ import AppRoutes from './routes/AppRoutes';
 import './styles/main.css';
 
 // Keyboard navigation wrapper component
-const KeyboardNavigation = ({ children, onShortcutsToggle }) => {
+const KeyboardNavigation = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const KeyboardNavigation = ({ children, onShortcutsToggle }) => {
         case 'd':
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
-            navigate('/dashboard');
+            navigate('/learn');
           }
           break;
         case 'l':
@@ -56,7 +56,7 @@ const KeyboardNavigation = ({ children, onShortcutsToggle }) => {
         case '?':
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
-            onShortcutsToggle();
+            // Open keyboard shortcuts help
           }
           break;
         default:
@@ -66,22 +66,16 @@ const KeyboardNavigation = ({ children, onShortcutsToggle }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [navigate, onShortcutsToggle]);
+  }, [navigate]);
 
   return children;
 };
 
 function App() {
-  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
-
-  const toggleShortcuts = () => {
-    setIsShortcutsOpen((prev) => !prev);
-  };
-
   return (
     <AuthProvider>
       <BrowserRouter>
-        <KeyboardNavigation onShortcutsToggle={toggleShortcuts}>
+        <KeyboardNavigation>
           {/* Skip to main content link */}
           <a href="#main-content" className="skip-link">
             Skip to main content
@@ -91,11 +85,8 @@ function App() {
             <AppRoutes />
           </main>
 
-          {/* Keyboard shortcuts help modal */}
-          <KeyboardShortcuts 
-            isOpen={isShortcutsOpen}
-            onClose={() => setIsShortcutsOpen(false)}
-          />
+          {/* Keyboard shortcuts help */}
+          <KeyboardShortcuts />
         </KeyboardNavigation>
       </BrowserRouter>
     </AuthProvider>

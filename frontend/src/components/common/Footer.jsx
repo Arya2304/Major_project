@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import KeyboardShortcuts from './KeyboardShortcuts';
+import { FaHandPeace, FaFacebook, FaTwitter, FaInstagram, FaYoutube } from 'react-icons/fa';
 
 /**
  * Footer Component — Phase 2
@@ -26,10 +27,10 @@ const Footer = () => {
 
   // Social media links with accessible labels
   const socialLinks = [
-    { icon: '📘', label: 'Facebook', url: 'https://facebook.com/signlearn' },
-    { icon: '𝕏', label: 'Twitter', url: 'https://twitter.com/signlearn' },
-    { icon: '📷', label: 'Instagram', url: 'https://instagram.com/signlearn' },
-    { icon: '▶️', label: 'YouTube', url: 'https://youtube.com/signlearn' },
+    { icon: <FaFacebook />, label: 'Facebook', url: 'https://facebook.com/signlearn' },
+    { icon: <FaTwitter />, label: 'Twitter', url: 'https://twitter.com/signlearn' },
+    { icon: <FaInstagram />, label: 'Instagram', url: 'https://instagram.com/signlearn' },
+    { icon: <FaYoutube />, label: 'YouTube', url: 'https://youtube.com/signlearn' },
   ];
 
   // Supported sign languages from Phase 1
@@ -54,7 +55,9 @@ const Footer = () => {
               className="flex items-center gap-2 text-xl font-bold text-primary-600 hover:text-primary-700 transition-colors mb-4"
               aria-label="SignLearn home"
             >
-              <span className="text-2xl">🤟</span>
+              <span className="text-2xl">
+                <FaHandPeace />
+              </span>
               <span className="font-display">SignLearn</span>
             </Link>
             <p className="text-gray-600 text-sm leading-relaxed mb-4">
@@ -120,8 +123,8 @@ const Footer = () => {
                     aria-label={`Visit us on ${social.label}`}
                     title={social.label}
                   >
-                    <span className="text-lg" role="img">
-                      {social.icon}
+                    <span className="text-lg">
+                      {typeof social.icon === 'string' ? social.icon : social.icon}
                     </span>
                   </a>
                 ))}

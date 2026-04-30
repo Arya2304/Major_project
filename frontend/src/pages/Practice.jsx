@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import AccessibleVideo from '../components/common/AccessibleVideo';
 import AccessibleButton from '../components/common/AccessibleButton';
+import { FaHandPeace, FaGraduationCap, FaRedo, FaUser, FaFrownOpen, FaCamera, FaHourglass, FaPlay, FaStop, FaChartBar, FaLightbulb } from 'react-icons/fa';
 import './Practice.css';
 
 /**
@@ -77,7 +78,7 @@ const Practice = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-500 to-accent-500 py-12">
         <div className="page-container">
-          <h1 className="text-4xl font-black text-white mb-2">Practice Mode 🤟</h1>
+          <h1 className="text-4xl font-black text-white mb-2">Practice Mode <FaHandPeace className="inline-block ml-2" style={{fontSize: '1em'}} /></h1>
           <p className="text-lg text-primary-100">
             Mirror the instructor and perfect your signing
           </p>
@@ -91,7 +92,7 @@ const Practice = () => {
           {/* LEFT: Instructor Video */}
           <div className="flex flex-col">
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Instructor 🎓</h2>
+              <h2 className="text-xl font-bold text-gray-900"><FaGraduationCap className="inline-block mr-2" /> Instructor</h2>
               <p className="text-sm text-gray-600">Follow along with the sign demonstration</p>
             </div>
 
@@ -105,7 +106,7 @@ const Practice = () => {
             {/* Replay Button */}
             <div className="mt-4">
               <AccessibleButton variant="outline" className="w-full">
-                🔁 Replay Sign
+                <FaRedo className="inline-block mr-2" /> Replay Sign
               </AccessibleButton>
             </div>
           </div>
@@ -113,7 +114,7 @@ const Practice = () => {
           {/* RIGHT: Camera Mirror */}
           <div className="flex flex-col">
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900">You 🪞</h2>
+              <h2 className="text-xl font-bold text-gray-900">You <FaUser className="inline-block ml-2" /></h2>
               <p className="text-sm text-gray-600">See yourself mirrored and compare with instructor</p>
             </div>
 
@@ -122,7 +123,7 @@ const Practice = () => {
               {cameraPermissionDenied ? (
                 /* Camera Permission Denied */
                 <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-8">
-                  <div className="text-7xl mb-4">😕</div>
+                  <FaFrownOpen className="text-7xl mb-4 text-gray-400" />
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Camera Access Denied</h3>
                   <p className="text-gray-600 text-center mb-6">
                     Please allow camera access in your browser settings to use practice mode.
@@ -144,7 +145,7 @@ const Practice = () => {
               ) : (
                 /* Camera Placeholder */
                 <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
-                  <div className="text-7xl mb-4">📷</div>
+                  <FaCamera className="text-7xl mb-4 text-gray-400" />
                   <p className="text-gray-600 font-semibold">Ready to practice?</p>
                   <p className="text-sm text-gray-500 mt-2">Start your camera to begin</p>
                 </div>
@@ -160,7 +161,15 @@ const Practice = () => {
                   disabled={cameraLoading}
                   className="w-full"
                 >
-                  {cameraLoading ? '⏳ Requesting camera...' : '▶️ Start Camera'}
+                  {cameraLoading ? (
+                    <>
+                      <FaHourglass className="inline-block mr-2" /> Requesting camera...
+                    </>
+                  ) : (
+                    <>
+                      <FaPlay className="inline-block mr-2" /> Start Camera
+                    </>
+                  )}
                 </AccessibleButton>
               ) : (
                 <AccessibleButton
@@ -168,7 +177,7 @@ const Practice = () => {
                   onClick={stopCamera}
                   className="w-full"
                 >
-                  ⏹️ Stop Camera
+                  <><FaStop className="inline-block mr-2" /> Stop Camera</>
                 </AccessibleButton>
               )}
             </div>
@@ -177,7 +186,7 @@ const Practice = () => {
 
         {/* Session Stats */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">📊 Session Stats</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"><FaChartBar className="inline-block mr-2" /> Session Stats</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Signs Practiced Card */}
             <div className="stat-card bg-white border-2 border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all">
@@ -204,7 +213,7 @@ const Practice = () => {
 
         {/* Tips Section */}
         <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-8">
-          <h3 className="text-lg font-bold text-blue-900 mb-4">💡 Practice Tips</h3>
+          <h3 className="text-lg font-bold text-blue-900 mb-4"><FaLightbulb className="inline-block mr-2" /> Practice Tips</h3>
           <ul className="space-y-3">
             <li className="flex gap-3 text-blue-900">
               <span className="text-xl">✓</span>

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FaHome, FaHandSpock, FaBook, FaChartLine, FaDoorOpen, FaUser } from 'react-icons/fa';
 
 /**
  * IconNavigation Component — Phase 2
  * Bottom mobile navigation with icon + label pairs
  * Features: fixed at bottom on mobile, hidden on desktop (md+)
- * Shows 4-5 items: Home, Signs, Courses, Progress, Dashboard (if authenticated)
+ * Shows items: Home, Signs, Courses, Progress
  * Active item highlighted with saffron accent
  */
 const IconNavigation = () => {
@@ -15,16 +16,13 @@ const IconNavigation = () => {
 
   // Navigation items configuration
   const navItems = [
-    { path: '/', icon: '🏠', label: 'Home' },
-    { path: '/signs', icon: '✋', label: 'Signs' },
-    { path: '/courses', icon: '📚', label: 'Courses' },
-    { path: '/progress', icon: '📈', label: 'Progress' },
+    { path: '/', icon: <FaHome />, label: 'Home' },
+    { path: '/signs', icon: <FaHandSpock />, label: 'Signs' },
+    { path: '/courses', icon: <FaBook />, label: 'Courses' },
+    { path: '/progress', icon: <FaChartLine />, label: 'Progress' },
   ];
 
-  // Add dashboard if authenticated
-  if (isAuthenticated) {
-    navItems.push({ path: '/dashboard', icon: '📊', label: 'Dashboard' });
-  }
+
 
   // Check if a route is active
   const isActive = (path) => {
@@ -56,7 +54,7 @@ const IconNavigation = () => {
               aria-current={active ? 'page' : undefined}
             >
               <span className="text-2xl" aria-hidden="true">
-                {item.icon}
+                {typeof item.icon === 'string' ? item.icon : item.icon}
               </span>
               <span className="text-xs font-bold uppercase tracking-wide">
                 {item.label}
@@ -73,7 +71,7 @@ const IconNavigation = () => {
             aria-label="Logout from account"
           >
             <span className="text-2xl" aria-hidden="true">
-              🚪
+              <FaDoorOpen />
             </span>
             <span className="text-xs font-bold uppercase tracking-wide">
               Logout
@@ -86,7 +84,7 @@ const IconNavigation = () => {
             aria-label="Login to your account"
           >
             <span className="text-2xl" aria-hidden="true">
-              👤
+              <FaUser />
             </span>
             <span className="text-xs font-bold uppercase tracking-wide">
               Login

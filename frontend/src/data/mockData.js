@@ -1,22 +1,69 @@
-// Mock courses data
+// Comprehensive ISL Course Structure with Modules and Lessons
 export const mockCourses = [
   {
     id: 1,
-    title: 'ASL Basics',
-    subtitle: 'Learn fundamental American Sign Language',
-    description: 'Start your journey with the fundamentals of American Sign Language. Learn basic greetings, everyday phrases, and essential vocabulary.',
-    language: 'ASL',
+    title: 'ISL Basics',
+    subtitle: 'Learn fundamental Indian Sign Language',
+    description: 'Start your journey with the fundamentals of Indian Sign Language. Learn basic greetings, everyday phrases, and essential vocabulary.',
+    language: 'ISL',
     difficulty: 'Beginner',
     duration: '4 weeks',
-    instructor: 'Sarah Johnson',
-    thumbnail: '🤲',
-    students: 1250,
-    rating: 4.8,
-    lessons: [
-      { id: 1, title: 'Introduction to ASL', duration: '15 min', videoUrl: 'asl-intro' },
-      { id: 2, title: 'Basic Greetings', duration: '20 min', videoUrl: 'asl-greetings' },
-      { id: 3, title: 'Numbers 1-10', duration: '18 min', videoUrl: 'asl-numbers' },
-      { id: 4, title: 'Family Members', duration: '22 min', videoUrl: 'asl-family' },
+    instructor: 'Priya Sharma',
+    thumbnail: 'hands',
+    emoji: '🇮🇳',
+    students: 2500,
+    rating: 4.9,
+    modules: [
+      {
+        id: 101,
+        title: 'Module 1: Introduction to ISL',
+        description: 'Learn the basics and cultural context of ISL',
+        lessons: [
+          { id: 1, title: 'What is ISL?', duration: '12 min', order: 1 },
+          { id: 2, title: 'ISL Culture & History', duration: '18 min', order: 2 },
+          { id: 3, title: 'Basic Hand Shapes', duration: '15 min', order: 3 },
+        ],
+      },
+      {
+        id: 102,
+        title: 'Module 2: Greetings & Politeness',
+        description: 'Master common ISL greetings',
+        lessons: [
+          { id: 4, title: 'Hello & Goodbye', duration: '14 min', order: 1 },
+          { id: 5, title: 'Thank You & Please', duration: '16 min', order: 2 },
+          { id: 6, title: 'How Are You?', duration: '13 min', order: 3 },
+        ],
+      },
+      {
+        id: 103,
+        title: 'Module 3: Numbers & Dates',
+        description: 'Learn to sign numbers and dates',
+        lessons: [
+          { id: 7, title: 'Numbers 1-10', duration: '16 min', order: 1 },
+          { id: 8, title: 'Numbers 11-20 & Counting', duration: '18 min', order: 2 },
+          { id: 9, title: 'Days & Months', duration: '15 min', order: 3 },
+        ],
+      },
+      {
+        id: 104,
+        title: 'Module 4: Daily Communication',
+        description: 'Common phrases for daily life',
+        lessons: [
+          { id: 10, title: 'My Name Is...', duration: '14 min', order: 1 },
+          { id: 11, title: 'Family Members', duration: '17 min', order: 2 },
+          { id: 12, title: 'Colors & Objects', duration: '16 min', order: 3 },
+        ],
+      },
+      {
+        id: 105,
+        title: 'Module 5: Emotions & Expressions',
+        description: 'Expressing feelings and emotions',
+        lessons: [
+          { id: 13, title: 'Happy, Sad, Angry', duration: '13 min', order: 1 },
+          { id: 14, title: 'I Like / I Dislike', duration: '15 min', order: 2 },
+          { id: 15, title: 'Common Expressions', duration: '14 min', order: 3 },
+        ],
+      },
     ],
   },
   {
@@ -27,151 +74,634 @@ export const mockCourses = [
     language: 'ISL',
     difficulty: 'Intermediate',
     duration: '6 weeks',
-    instructor: 'Raj Kumar',
-    thumbnail: '🇮🇳',
-    students: 850,
-    rating: 4.6,
-    lessons: [
-      { id: 5, title: 'Sentence Structure', duration: '25 min', videoUrl: 'isl-structure' },
-      { id: 6, title: 'Business Vocabulary', duration: '30 min', videoUrl: 'isl-business' },
-      { id: 7, title: 'Conversational Practice', duration: '28 min', videoUrl: 'isl-conversation' },
-      { id: 8, title: 'Advanced Expressions', duration: '32 min', videoUrl: 'isl-expressions' },
+    instructor: 'Rajesh Kumar',
+    thumbnail: 'india',
+    emoji: '🎓',
+    students: 1200,
+    rating: 4.8,
+    modules: [
+      {
+        id: 201,
+        title: 'Module 1: Sentence Formation',
+        description: 'Learn ISL grammar and sentence structure',
+        lessons: [
+          { id: 16, title: 'Subject-Verb-Object Order', duration: '18 min', order: 1 },
+          { id: 17, title: 'Questions in ISL', duration: '20 min', order: 2 },
+          { id: 18, title: 'Negation & Affirmation', duration: '17 min', order: 3 },
+        ],
+      },
+      {
+        id: 202,
+        title: 'Module 2: Workplace Communication',
+        description: 'Professional ISL vocabulary',
+        lessons: [
+          { id: 19, title: 'Job Titles & Professions', duration: '16 min', order: 1 },
+          { id: 20, title: 'Office Vocabulary', duration: '19 min', order: 2 },
+          { id: 21, title: 'Meetings & Discussions', duration: '21 min', order: 3 },
+        ],
+      },
+      {
+        id: 203,
+        title: 'Module 3: Healthcare & Wellness',
+        description: 'Medical and health-related ISL terms',
+        lessons: [
+          { id: 22, title: 'Body Parts', duration: '14 min', order: 1 },
+          { id: 23, title: 'Health Conditions', duration: '18 min', order: 2 },
+          { id: 24, title: 'Medical Appointments', duration: '17 min', order: 3 },
+        ],
+      },
     ],
   },
   {
     id: 3,
-    title: 'BSL Essentials',
-    subtitle: 'Master British Sign Language fundamentals',
-    description: 'Comprehensive course covering British Sign Language essentials, cultural context, and practical communication.',
-    language: 'BSL',
+    title: 'ASL Basics',
+    subtitle: 'Learn fundamental American Sign Language',
+    description: 'American Sign Language fundamentals course for beginners.',
+    language: 'ASL',
     difficulty: 'Beginner',
-    duration: '5 weeks',
-    instructor: 'Emma Roberts',
-    thumbnail: '🇬🇧',
-    students: 920,
+    duration: '4 weeks',
+    instructor: 'Sarah Johnson',
+    thumbnail: 'usa',
+    emoji: '🇺🇸',
+    students: 1800,
     rating: 4.7,
-    lessons: [
-      { id: 9, title: 'BSL Fundamentals', duration: '20 min', videoUrl: 'bsl-fundamentals' },
-      { id: 10, title: 'Cultural Context', duration: '18 min', videoUrl: 'bsl-culture' },
-      { id: 11, title: 'Daily Conversations', duration: '24 min', videoUrl: 'bsl-daily' },
-      { id: 12, title: 'BSL Fingerspelling', duration: '21 min', videoUrl: 'bsl-finger' },
+    modules: [
+      {
+        id: 301,
+        title: 'Module 1: ASL Basics',
+        description: 'Introduction to American Sign Language',
+        lessons: [
+          { id: 25, title: 'Introduction to ASL', duration: '15 min', order: 1 },
+          { id: 26, title: 'Hand Shapes & Positions', duration: '17 min', order: 2 },
+          { id: 27, title: 'Basic Signs', duration: '16 min', order: 3 },
+        ],
+      },
     ],
   },
   {
     id: 4,
-    title: 'Advanced ASL',
-    subtitle: 'Master complex ASL concepts',
-    description: 'Advanced American Sign Language course for learners ready to deepen their skills and understanding.',
-    language: 'ASL',
-    difficulty: 'Advanced',
-    duration: '8 weeks',
-    instructor: 'Michael Chen',
-    thumbnail: '🎓',
-    students: 420,
-    rating: 4.9,
-    lessons: [
-      { id: 13, title: 'Complex Grammatical Structures', duration: '35 min', videoUrl: 'asl-grammar' },
-      { id: 14, title: 'Storytelling in ASL', duration: '40 min', videoUrl: 'asl-stories' },
-      { id: 15, title: 'Specialized Vocabulary', duration: '38 min', videoUrl: 'asl-specialized' },
-      { id: 16, title: 'Interpreting Techniques', duration: '42 min', videoUrl: 'asl-interpreting' },
+    title: 'BSL Essentials',
+    subtitle: 'Master British Sign Language fundamentals',
+    description: 'British Sign Language course for beginners.',
+    language: 'BSL',
+    difficulty: 'Beginner',
+    duration: '5 weeks',
+    instructor: 'Emma Roberts',
+    thumbnail: 'uk',
+    emoji: '🇬🇧',
+    students: 950,
+    rating: 4.6,
+    modules: [
+      {
+        id: 401,
+        title: 'Module 1: BSL Fundamentals',
+        description: 'Learn the basics of British Sign Language',
+        lessons: [
+          { id: 28, title: 'BSL Basics', duration: '16 min', order: 1 },
+          { id: 29, title: 'Cultural Context', duration: '14 min', order: 2 },
+          { id: 30, title: 'Introductions', duration: '15 min', order: 3 },
+        ],
+      },
     ],
+  },
+];
+
+// Comprehensive lesson data - ISL focused
+export const allLessons = [
+  // ISL Basics - Module 1
+  {
+    id: 1,
+    courseId: 1,
+    moduleId: 101,
+    title: 'What is ISL?',
+    description: 'Discover what Indian Sign Language is and its importance in communication.',
+    duration: '12 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=What+is+ISL',
+    subtitles: true,
+    transcript: 'Indian Sign Language (ISL) is a visual language used by Deaf communities in India...',
+    vocabulary: [
+      { english: 'Sign Language', hindi: 'संकेत भाषा', marathi: 'संकेत भाषा' },
+      { english: 'Deaf', hindi: 'बहरा', marathi: 'बहरा' },
+      { english: 'Communication', hindi: 'संचार', marathi: 'संचार' },
+    ],
+    exercises: [
+      { id: 1, text: 'Watch the introduction video', type: 'video' },
+      { id: 2, text: 'Quiz: What is ISL?', type: 'quiz' },
+    ],
+    nextLessonId: 2,
+    previousLessonId: null,
+  },
+  {
+    id: 2,
+    courseId: 1,
+    moduleId: 101,
+    title: 'ISL Culture & History',
+    description: 'Learn about Deaf culture and the history of ISL.',
+    duration: '18 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=ISL+Culture',
+    subtitles: true,
+    transcript: 'ISL has a rich history spanning centuries...',
+    vocabulary: [
+      { english: 'Culture', hindi: 'संस्कृति', marathi: 'संस्कृती' },
+      { english: 'History', hindi: 'इतिहास', marathi: 'इतिहास' },
+      { english: 'Community', hindi: 'समुदाय', marathi: 'समुदाय' },
+    ],
+    exercises: [
+      { id: 3, text: 'Watch the cultural video', type: 'video' },
+      { id: 4, text: 'Reflection: What did you learn?', type: 'reflection' },
+    ],
+    nextLessonId: 3,
+    previousLessonId: 1,
+  },
+  {
+    id: 3,
+    courseId: 1,
+    moduleId: 101,
+    title: 'Basic Hand Shapes',
+    description: 'Master the fundamental hand shapes used in ISL.',
+    duration: '15 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Hand+Shapes',
+    subtitles: true,
+    transcript: 'Hand shapes are the foundation of sign language...',
+    vocabulary: [
+      { english: 'Hand Shape', hindi: 'हाथ का आकार', marathi: 'हाताचा आकार' },
+      { english: 'Open Hand', hindi: 'खुला हाथ', marathi: 'उघडा हात' },
+      { english: 'Fist', hindi: 'मुट्ठी', marathi: 'मुठी' },
+    ],
+    exercises: [
+      { id: 5, text: 'Practice hand shapes', type: 'practice' },
+      { id: 6, text: 'Quiz: Identify hand shapes', type: 'quiz' },
+    ],
+    nextLessonId: 4,
+    previousLessonId: 2,
+  },
+  // ISL Basics - Module 2
+  {
+    id: 4,
+    courseId: 1,
+    moduleId: 102,
+    title: 'Hello & Goodbye',
+    description: 'Learn the basic greeting and farewell signs.',
+    duration: '14 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Hello+Goodbye',
+    subtitles: true,
+    transcript: 'Greetings are the first signs you should learn...',
+    vocabulary: [
+      { english: 'Hello', hindi: 'नमस्ते', marathi: 'नमस्कार' },
+      { english: 'Goodbye', hindi: 'अलविदा', marathi: 'अलविदा' },
+      { english: 'See you later', hindi: 'बाद में मिलते हैं', marathi: 'नंतर भेटू' },
+    ],
+    exercises: [
+      { id: 7, text: 'Practice greeting sign', type: 'practice' },
+      { id: 8, text: 'Record yourself greeting', type: 'video-submit' },
+    ],
+    nextLessonId: 5,
+    previousLessonId: 3,
   },
   {
     id: 5,
-    title: 'ISL Basics',
-    subtitle: 'Learn fundamental Indian Sign Language',
-    description: 'Start your journey with the fundamentals of Indian Sign Language. Learn the ISL alphabet, numbers, greetings, and family vocabulary. Comprehensive introduction to India\'s primary sign language.',
-    language: 'ISL',
+    courseId: 1,
+    moduleId: 102,
+    title: 'Thank You & Please',
+    description: 'Master polite signs for daily interactions.',
+    duration: '16 minutes',
     difficulty: 'Beginner',
-    duration: '6 weeks',
-    instructor: 'Priya Sharma',
-    thumbnail: '🇮🇳',
-    students: 3200,
-    rating: 4.9,
-    lessons: [
-      { id: 17, title: 'Introduction to ISL', duration: '15 min', videoUrl: 'isl-intro' },
-      { id: 18, title: 'ISL Alphabet A-M', duration: '25 min', videoUrl: 'isl-alpha-am' },
-      { id: 19, title: 'ISL Alphabet N-Z', duration: '25 min', videoUrl: 'isl-alpha-nz' },
-      { id: 20, title: 'Numbers 1-20', duration: '20 min', videoUrl: 'isl-numbers' },
-      { id: 21, title: 'Basic Greetings', duration: '22 min', videoUrl: 'isl-greetings' },
-      { id: 22, title: 'Family Members', duration: '24 min', videoUrl: 'isl-family' },
+    videoUrl: 'https://via.placeholder.com/800x600?text=Thank+You+Please',
+    subtitles: true,
+    transcript: 'Politeness is essential in any language...',
+    vocabulary: [
+      { english: 'Thank you', hindi: 'धन्यवाद', marathi: 'धन्यवाद' },
+      { english: 'Please', hindi: 'कृपया', marathi: 'कृपया' },
+      { english: 'You\'re welcome', hindi: 'स्वागत है', marathi: 'स्वागत आहे' },
     ],
+    exercises: [
+      { id: 9, text: 'Practice polite signs', type: 'practice' },
+      { id: 10, text: 'Create a polite conversation', type: 'challenge' },
+    ],
+    nextLessonId: 6,
+    previousLessonId: 4,
   },
   {
     id: 6,
-    title: 'ISL Daily Life',
-    subtitle: 'Learn signs for everyday situations',
-    description: 'Master essential ISL vocabulary for daily life situations including market interactions, transportation, healthcare, and workplace communication. Perfect for intermediate learners.',
-    language: 'ISL',
-    difficulty: 'Intermediate',
-    duration: '8 weeks',
-    instructor: 'Arjun Mehta',
-    thumbnail: '🛒',
-    students: 1800,
-    rating: 4.7,
-    lessons: [
-      { id: 23, title: 'Market Signs', duration: '28 min', videoUrl: 'isl-market' },
-      { id: 24, title: 'Transportation Vocabulary', duration: '30 min', videoUrl: 'isl-transport' },
-      { id: 25, title: 'Healthcare Communication', duration: '32 min', videoUrl: 'isl-healthcare' },
-      { id: 26, title: 'Workplace Signs', duration: '35 min', videoUrl: 'isl-workplace' },
+    courseId: 1,
+    moduleId: 102,
+    title: 'How Are You?',
+    description: 'Learn to ask and answer "How are you?" in ISL.',
+    duration: '13 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=How+Are+You',
+    subtitles: true,
+    transcript: 'A common question in any language is "How are you?"...',
+    vocabulary: [
+      { english: 'How are you?', hindi: 'आप कैसे हैं?', marathi: 'तुम कसे आहात?' },
+      { english: 'I\'m fine', hindi: 'मैं ठीक हूँ', marathi: 'मी ठीक आहे' },
+      { english: 'Good', hindi: 'अच्छा', marathi: 'चांगले' },
     ],
+    exercises: [
+      { id: 11, text: 'Learn "How are you?"', type: 'video' },
+      { id: 12, text: 'Practice conversation', type: 'practice' },
+    ],
+    nextLessonId: 7,
+    previousLessonId: 5,
   },
+  // ISL Basics - Module 3
   {
     id: 7,
-    title: 'ISL Advanced Grammar',
-    subtitle: 'Master complex ISL linguistic structures',
-    description: 'Deepen your understanding of ISL through advanced grammatical concepts including topic-comment structure, classifiers, and spatial grammar. Ideal for advanced learners and aspiring ISL teachers.',
-    language: 'ISL',
-    difficulty: 'Advanced',
-    duration: '10 weeks',
-    instructor: 'Dr. Sunita Rao',
-    thumbnail: '📚',
-    students: 620,
-    rating: 4.8,
-    lessons: [
-      { id: 27, title: 'Topic-Comment Structure', duration: '40 min', videoUrl: 'isl-topic-comment' },
-      { id: 28, title: 'Classifiers in ISL', duration: '42 min', videoUrl: 'isl-classifiers' },
-      { id: 29, title: 'Spatial Grammar', duration: '45 min', videoUrl: 'isl-spatial' },
-      { id: 30, title: 'Complex Discourse', duration: '48 min', videoUrl: 'isl-discourse' },
+    courseId: 1,
+    moduleId: 103,
+    title: 'Numbers 1-10',
+    description: 'Learn to sign numbers from 1 to 10.',
+    duration: '16 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Numbers+1-10',
+    subtitles: true,
+    transcript: 'Numbers are fundamental in any language...',
+    vocabulary: [
+      { english: 'One', hindi: 'एक', marathi: 'एक' },
+      { english: 'Two', hindi: 'दो', marathi: 'दोन' },
+      { english: 'Number', hindi: 'संख्या', marathi: 'संख्या' },
     ],
+    exercises: [
+      { id: 13, text: 'Practice counting 1-10', type: 'practice' },
+      { id: 14, text: 'Quiz: Identify numbers', type: 'quiz' },
+    ],
+    nextLessonId: 8,
+    previousLessonId: 6,
   },
   {
     id: 8,
-    title: 'ASL Intermediate',
-    subtitle: 'Advance your American Sign Language skills',
-    description: 'Build on your ASL foundation with intermediate vocabulary, sentence structure, and conversational practice. Perfect for continuing learners ready to expand their signing abilities.',
-    language: 'ASL',
-    difficulty: 'Intermediate',
-    duration: '7 weeks',
-    instructor: 'David Williams',
-    thumbnail: '🤝',
-    students: 980,
-    rating: 4.6,
-    lessons: [
-      { id: 31, title: 'Intermediate Vocabulary', duration: '28 min', videoUrl: 'asl-vocab-int' },
-      { id: 32, title: 'Sentence Structure & Grammar', duration: '32 min', videoUrl: 'asl-structure' },
-      { id: 33, title: 'Conversational Practice', duration: '30 min', videoUrl: 'asl-convo' },
-      { id: 34, title: 'Question Formation', duration: '26 min', videoUrl: 'asl-questions' },
+    courseId: 1,
+    moduleId: 103,
+    title: 'Numbers 11-20 & Counting',
+    description: 'Learn numbers 11-20 and counting techniques.',
+    duration: '18 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Numbers+11-20',
+    subtitles: true,
+    transcript: 'Once you master 1-10, learning 11-20 becomes easier...',
+    vocabulary: [
+      { english: 'Ten', hindi: 'दस', marathi: 'दहा' },
+      { english: 'Twenty', hindi: 'बीस', marathi: 'वीस' },
+      { english: 'Count', hindi: 'गिनती', marathi: 'गणना' },
     ],
+    exercises: [
+      { id: 15, text: 'Practice counting 1-20', type: 'practice' },
+      { id: 16, text: 'Speed challenge', type: 'challenge' },
+    ],
+    nextLessonId: 9,
+    previousLessonId: 7,
   },
   {
     id: 9,
-    title: 'BSL Intermediate',
-    subtitle: 'Progress your British Sign Language',
-    description: 'Continue your BSL journey with intermediate vocabulary, sentence structures, and practical communication scenarios. Designed for learners progressing beyond basics.',
-    language: 'BSL',
-    difficulty: 'Intermediate',
-    duration: '7 weeks',
-    instructor: 'Olivia Thompson',
-    thumbnail: '💬',
-    students: 740,
-    rating: 4.5,
-    lessons: [
-      { id: 35, title: 'Intermediate Vocabulary', duration: '28 min', videoUrl: 'bsl-vocab-int' },
-      { id: 36, title: 'BSL Grammar & Structure', duration: '32 min', videoUrl: 'bsl-structure' },
-      { id: 37, title: 'Practical Conversations', duration: '30 min', videoUrl: 'bsl-practical' },
-      { id: 38, title: 'Expressions & Idioms', duration: '28 min', videoUrl: 'bsl-idioms' },
+    courseId: 1,
+    moduleId: 103,
+    title: 'Days & Months',
+    description: 'Learn to sign days of the week and months.',
+    duration: '15 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Days+Months',
+    subtitles: true,
+    transcript: 'Time is an important part of daily communication...',
+    vocabulary: [
+      { english: 'Monday', hindi: 'सोमवार', marathi: 'सोमवार' },
+      { english: 'January', hindi: 'जनवरी', marathi: 'जानेवारी' },
+      { english: 'Day', hindi: 'दिन', marathi: 'दिवस' },
     ],
+    exercises: [
+      { id: 17, text: 'Learn days of week', type: 'video' },
+      { id: 18, text: 'Practice months', type: 'practice' },
+    ],
+    nextLessonId: 10,
+    previousLessonId: 8,
+  },
+  // ISL Basics - Module 4
+  {
+    id: 10,
+    courseId: 1,
+    moduleId: 104,
+    title: 'My Name Is...',
+    description: 'Learn to introduce yourself in ISL.',
+    duration: '14 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=My+Name+Is',
+    subtitles: true,
+    transcript: 'One of the first things to learn is how to introduce yourself...',
+    vocabulary: [
+      { english: 'My name is', hindi: 'मेरा नाम है', marathi: 'माझे नाव आहे' },
+      { english: 'Name', hindi: 'नाम', marathi: 'नाव' },
+      { english: 'I', hindi: 'मैं', marathi: 'मी' },
+    ],
+    exercises: [
+      { id: 19, text: 'Learn introduction', type: 'video' },
+      { id: 20, text: 'Introduce yourself', type: 'video-submit' },
+    ],
+    nextLessonId: 11,
+    previousLessonId: 9,
+  },
+  {
+    id: 11,
+    courseId: 1,
+    moduleId: 104,
+    title: 'Family Members',
+    description: 'Learn signs for different family members.',
+    duration: '17 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Family+Members',
+    subtitles: true,
+    transcript: 'Talking about family is a common topic...',
+    vocabulary: [
+      { english: 'Mother', hindi: 'माता', marathi: 'आई' },
+      { english: 'Father', hindi: 'पिता', marathi: 'बाप' },
+      { english: 'Sister', hindi: 'बहन', marathi: 'बहिण' },
+      { english: 'Brother', hindi: 'भाई', marathi: 'भाऊ' },
+    ],
+    exercises: [
+      { id: 21, text: 'Learn family signs', type: 'video' },
+      { id: 22, text: 'Create family tree in ISL', type: 'challenge' },
+    ],
+    nextLessonId: 12,
+    previousLessonId: 10,
+  },
+  {
+    id: 12,
+    courseId: 1,
+    moduleId: 104,
+    title: 'Colors & Objects',
+    description: 'Learn to sign common colors and objects.',
+    duration: '16 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Colors+Objects',
+    subtitles: true,
+    transcript: 'Colors and objects are part of everyday vocabulary...',
+    vocabulary: [
+      { english: 'Red', hindi: 'लाल', marathi: 'लाल' },
+      { english: 'Blue', hindi: 'नीला', marathi: 'निळा' },
+      { english: 'Book', hindi: 'किताब', marathi: 'पुस्तक' },
+      { english: 'Table', hindi: 'मेज', marathi: 'टेबल' },
+    ],
+    exercises: [
+      { id: 23, text: 'Learn colors', type: 'practice' },
+      { id: 24, text: 'Quiz: Colors & objects', type: 'quiz' },
+    ],
+    nextLessonId: 13,
+    previousLessonId: 11,
+  },
+  // ISL Basics - Module 5
+  {
+    id: 13,
+    courseId: 1,
+    moduleId: 105,
+    title: 'Happy, Sad, Angry',
+    description: 'Learn to express basic emotions in ISL.',
+    duration: '13 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Emotions',
+    subtitles: true,
+    transcript: 'Emotions are conveyed through facial expressions and hand signs...',
+    vocabulary: [
+      { english: 'Happy', hindi: 'खुश', marathi: 'आनंदी' },
+      { english: 'Sad', hindi: 'दुखी', marathi: 'दुःखी' },
+      { english: 'Angry', hindi: 'गुस्से में', marathi: 'रागित' },
+    ],
+    exercises: [
+      { id: 25, text: 'Learn emotion signs', type: 'video' },
+      { id: 26, text: 'Express emotions', type: 'practice' },
+    ],
+    nextLessonId: 14,
+    previousLessonId: 12,
+  },
+  {
+    id: 14,
+    courseId: 1,
+    moduleId: 105,
+    title: 'I Like / I Dislike',
+    description: 'Learn to express preferences in ISL.',
+    duration: '15 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Like+Dislike',
+    subtitles: true,
+    transcript: 'Expressing preferences is essential for communication...',
+    vocabulary: [
+      { english: 'Like', hindi: 'पसंद करना', marathi: 'आवडते' },
+      { english: 'Dislike', hindi: 'नापसंद करना', marathi: 'आवडत नाही' },
+      { english: 'Love', hindi: 'प्यार', marathi: 'प्रेम' },
+    ],
+    exercises: [
+      { id: 27, text: 'Learn preference signs', type: 'video' },
+      { id: 28, text: 'Express your preferences', type: 'practice' },
+    ],
+    nextLessonId: 15,
+    previousLessonId: 13,
+  },
+  {
+    id: 15,
+    courseId: 1,
+    moduleId: 105,
+    title: 'Common Expressions',
+    description: 'Learn commonly used ISL expressions.',
+    duration: '14 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Expressions',
+    subtitles: true,
+    transcript: 'These expressions are used frequently in ISL conversations...',
+    vocabulary: [
+      { english: 'Congratulations', hindi: 'बधाई हो', marathi: 'अभिनंदन' },
+      { english: 'Sorry', hindi: 'माफी', marathi: 'क्षमा' },
+      { english: 'Excuse me', hindi: 'क्षमा करें', marathi: 'माझ्या मार्गस्थ' },
+    ],
+    exercises: [
+      { id: 29, text: 'Learn common expressions', type: 'video' },
+      { id: 30, text: 'Final quiz', type: 'quiz' },
+    ],
+    nextLessonId: 16,
+    previousLessonId: 14,
+  },
+  // ISL Intermediate lessons
+  {
+    id: 16,
+    courseId: 2,
+    moduleId: 201,
+    title: 'Subject-Verb-Object Order',
+    description: 'Understand ISL grammar and sentence structure.',
+    duration: '18 minutes',
+    difficulty: 'Intermediate',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Grammar',
+    subtitles: true,
+    transcript: 'ISL sentence structure follows specific patterns...',
+    vocabulary: [
+      { english: 'Subject', hindi: 'कर्ता', marathi: 'विषय' },
+      { english: 'Verb', hindi: 'क्रिया', marathi: 'क्रिया' },
+      { english: 'Object', hindi: 'कर्म', marathi: 'वस्तू' },
+    ],
+    exercises: [
+      { id: 31, text: 'Learn sentence structure', type: 'video' },
+      { id: 32, text: 'Form sentences', type: 'practice' },
+    ],
+    nextLessonId: 17,
+    previousLessonId: 15,
+  },
+  {
+    id: 17,
+    courseId: 2,
+    moduleId: 201,
+    title: 'Questions in ISL',
+    description: 'Learn how to form and answer questions.',
+    duration: '20 minutes',
+    difficulty: 'Intermediate',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Questions',
+    subtitles: true,
+    transcript: 'Asking and answering questions is crucial...',
+    vocabulary: [
+      { english: 'What', hindi: 'क्या', marathi: 'काय' },
+      { english: 'Who', hindi: 'कौन', marathi: 'कोण' },
+      { english: 'Where', hindi: 'कहाँ', marathi: 'कुठे' },
+    ],
+    exercises: [
+      { id: 33, text: 'Question formation', type: 'practice' },
+      { id: 34, text: 'Q&A practice', type: 'challenge' },
+    ],
+    nextLessonId: 18,
+    previousLessonId: 16,
+  },
+  {
+    id: 18,
+    courseId: 2,
+    moduleId: 201,
+    title: 'Negation & Affirmation',
+    description: 'Express negation and affirmation in ISL.',
+    duration: '17 minutes',
+    difficulty: 'Intermediate',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Negation',
+    subtitles: true,
+    transcript: 'Showing agreement and disagreement...',
+    vocabulary: [
+      { english: 'No', hindi: 'नहीं', marathi: 'नाही' },
+      { english: 'Yes', hindi: 'हाँ', marathi: 'हो' },
+      { english: 'Maybe', hindi: 'शायद', marathi: 'कदाचित' },
+    ],
+    exercises: [
+      { id: 35, text: 'Learn negation', type: 'video' },
+      { id: 36, text: 'Practice agreement/disagreement', type: 'practice' },
+    ],
+    nextLessonId: 19,
+    previousLessonId: 17,
+  },
+  // Additional lessons for other courses (abbreviated)
+  {
+    id: 25,
+    courseId: 3,
+    moduleId: 301,
+    title: 'Introduction to ASL',
+    description: 'Learn the basics of American Sign Language.',
+    duration: '15 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=ASL+Intro',
+    subtitles: true,
+    transcript: 'American Sign Language is...',
+    vocabulary: [
+      { english: 'Hello', hindi: 'नमस्ते', marathi: 'नमस्कार' },
+    ],
+    exercises: [
+      { id: 37, text: 'Watch ASL introduction', type: 'video' },
+    ],
+    nextLessonId: 26,
+    previousLessonId: null,
+  },
+  {
+    id: 26,
+    courseId: 3,
+    moduleId: 301,
+    title: 'Hand Shapes & Positions',
+    description: 'Learn ASL hand shapes.',
+    duration: '17 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Hand+Shapes',
+    subtitles: true,
+    transcript: 'Hand shapes are...',
+    vocabulary: [
+      { english: 'Hand', hindi: 'हाथ', marathi: 'हात' },
+    ],
+    exercises: [
+      { id: 38, text: 'Practice hand shapes', type: 'practice' },
+    ],
+    nextLessonId: 27,
+    previousLessonId: 25,
+  },
+  {
+    id: 27,
+    courseId: 3,
+    moduleId: 301,
+    title: 'Basic Signs',
+    description: 'Learn basic ASL signs.',
+    duration: '16 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Basic+Signs',
+    subtitles: true,
+    transcript: 'Basic signs include...',
+    vocabulary: [],
+    exercises: [
+      { id: 39, text: 'Learn basic signs', type: 'practice' },
+    ],
+    nextLessonId: null,
+    previousLessonId: 26,
+  },
+  {
+    id: 28,
+    courseId: 4,
+    moduleId: 401,
+    title: 'BSL Basics',
+    description: 'Learn the basics of British Sign Language.',
+    duration: '16 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=BSL+Basics',
+    subtitles: true,
+    transcript: 'British Sign Language...',
+    vocabulary: [],
+    exercises: [
+      { id: 40, text: 'Watch BSL introduction', type: 'video' },
+    ],
+    nextLessonId: 29,
+    previousLessonId: null,
+  },
+  {
+    id: 29,
+    courseId: 4,
+    moduleId: 401,
+    title: 'Cultural Context',
+    description: 'Learn about BSL culture.',
+    duration: '14 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=BSL+Culture',
+    subtitles: true,
+    transcript: 'BSL culture...',
+    vocabulary: [],
+    exercises: [
+      { id: 41, text: 'Learn about culture', type: 'video' },
+    ],
+    nextLessonId: 30,
+    previousLessonId: 28,
+  },
+  {
+    id: 30,
+    courseId: 4,
+    moduleId: 401,
+    title: 'Introductions',
+    description: 'Learn BSL introductions.',
+    duration: '15 minutes',
+    difficulty: 'Beginner',
+    videoUrl: 'https://via.placeholder.com/800x600?text=Introductions',
+    subtitles: true,
+    transcript: 'Introductions in BSL...',
+    vocabulary: [],
+    exercises: [
+      { id: 42, text: 'Practice introductions', type: 'practice' },
+    ],
+    nextLessonId: null,
+    previousLessonId: 29,
   },
 ];
 
@@ -247,111 +777,50 @@ export const mockUserProgress = {
 
 // Mock lesson data
 export const getLesson = (lessonId) => {
-  const allLessons = [
-    {
-      id: 1,
-      title: 'Introduction to ASL',
-      courseId: 1,
-      description: 'Learn the basics of American Sign Language and its cultural significance.',
-      duration: '15 minutes',
-      difficulty: 'Beginner',
-      videoUrl: 'asl-intro',
-      subtitles: true,
-      transcript: 'In this lesson, we will explore the fundamentals...',
-      exercises: [
-        { id: 1, text: 'Practice the greeting sign', type: 'practice' },
-        { id: 2, text: 'Quiz: Identify 5 basic signs', type: 'quiz' },
-      ],
-      nextLessonId: 2,
-      previousLessonId: null,
-    },
-    {
-      id: 2,
-      title: 'Basic Greetings',
-      courseId: 1,
-      description: 'Master common ASL greetings used in everyday communication.',
-      duration: '20 minutes',
-      difficulty: 'Beginner',
-      videoUrl: 'asl-greetings',
-      subtitles: true,
-      transcript: 'Let\'s learn how to greet people in sign language...',
-      exercises: [
-        { id: 3, text: 'Practice 5 greeting variations', type: 'practice' },
-        { id: 4, text: 'Create your own greeting combination', type: 'challenge' },
-      ],
-      nextLessonId: 3,
-      previousLessonId: 1,
-    },
-  ];
-  return allLessons.find((l) => l.id === lessonId);
+  return allLessons.find((lesson) => lesson.id === lessonId) || null;
+};
+
+// Get all lessons for a course
+export const getCourseLessons = (courseId) => {
+  return allLessons.filter((lesson) => lesson.courseId === courseId);
 };
 
 // Get course by ID
 export const getCourseById = (courseId) => {
-  return mockCourses.find((c) => c.id === courseId);
+  return mockCourses.find((c) => c.id === courseId) || null;
 };
 
-// Sign language metadata
-export const SIGN_LANGUAGES = {
-  ISL: {
-    code: 'ISL',
-    name: 'Indian Sign Language',
-    country: 'India',
-    flag: '🇮🇳',
-    color: '#F97316',
-    bgColor: '#FFF7ED',
-    borderColor: '#FB923C',
-    textColor: '#9A3E09',
-    description: 'The primary sign language of the Indian Deaf community, recognized as an official language.',
-    speakers: '5 million+',
-    region: 'India',
-  },
-  ASL: {
-    code: 'ASL',
-    name: 'American Sign Language',
-    country: 'United States',
-    flag: '🇺🇸',
-    color: '#2563EB',
-    bgColor: '#EFF6FF',
-    borderColor: '#3B82F6',
-    textColor: '#1E40AF',
-    description: 'The most widely used sign language in North America, with its own distinct grammar.',
-    speakers: '2 million+',
-    region: 'North America',
-  },
-  BSL: {
-    code: 'BSL',
-    name: 'British Sign Language',
-    country: 'United Kingdom',
-    flag: '🇬🇧',
-    color: '#DC2626',
-    bgColor: '#FFF1F2',
-    borderColor: '#F87171',
-    textColor: '#991B1B',
-    description: 'The sign language of the British Deaf community, officially recognized in the UK since 2003.',
-    speakers: '250,000+',
-    region: 'United Kingdom',
-  },
+// Get module by ID
+export const getModuleById = (courseId, moduleId) => {
+  const course = getCourseById(courseId);
+  return course ? course.modules.find((m) => m.id === moduleId) : null;
 };
 
-// Get courses by language (or all if language is null or 'ALL')
-export const getLanguageCourses = (language = null) => {
-  if (!language || language === 'ALL') return mockCourses;
-  return mockCourses.filter(c => c.language === language);
+// Get all modules for a course
+export const getModulesByCourse = (courseId) => {
+  const course = getCourseById(courseId);
+  return course ? course.modules : [];
 };
 
-// Get language statistics
-export const getLanguageStats = () => {
-  return Object.keys(SIGN_LANGUAGES).map(lang => ({
-    ...SIGN_LANGUAGES[lang],
-    courseCount: mockCourses.filter(c => c.language === lang).length,
-    totalStudents: mockCourses
-      .filter(c => c.language === lang)
-      .reduce((sum, c) => sum + (c.students || 0), 0),
-  }));
+// Get lessons for a module
+export const getLessonsByModule = (courseId, moduleId) => {
+  const module = getModuleById(courseId, moduleId);
+  return module ? module.lessons : [];
 };
 
-// Get courses by language (legacy function - kept for backward compatibility)
+// Get next lesson in course
+export const getNextLesson = (lessonId) => {
+  const lesson = getLesson(lessonId);
+  return lesson && lesson.nextLessonId ? getLesson(lesson.nextLessonId) : null;
+};
+
+// Get previous lesson in course
+export const getPreviousLesson = (lessonId) => {
+  const lesson = getLesson(lessonId);
+  return lesson && lesson.previousLessonId ? getLesson(lesson.previousLessonId) : null;
+};
+
+// Get courses by language
 export const getCoursesByLanguage = (language) => {
   return mockCourses.filter((c) => c.language === language);
 };

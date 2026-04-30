@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../common/Navbar';
 import Footer from '../common/Footer';
+import BottomNavbar from '../common/BottomNavbar';
 
 /**
  * PublicLayout Component — Phase 2
@@ -23,7 +24,7 @@ const PublicLayout = () => {
       {/* Main Content Area */}
       <main
         id="main-content"
-        className="flex-1"
+        className="flex-1 pb-20"
         role="main"
       >
         <Outlet />
@@ -31,6 +32,9 @@ const PublicLayout = () => {
 
       {/* Bottom Footer */}
       <Footer />
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNavbar />
     </div>
   );
 };

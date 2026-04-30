@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import AccessibleButton from '../components/common/AccessibleButton';
-import { mockCourses } from '../data/mockData';
+import { mockCourses, getCourseLessons } from '../data/mockData';
 
 /**
  * Courses.jsx — Phase 3
@@ -196,7 +196,7 @@ const Courses = () => {
                     {/* Course Meta */}
                     <div className="grid grid-cols-3 gap-4 text-center text-sm border-t border-gray-200 pt-4">
                       <div>
-                        <p className="font-bold text-gray-900">{course.lessons?.length || 0}</p>
+                        <p className="font-bold text-gray-900">{getCourseLessons(course.id).length || 0}</p>
                         <p className="text-xs text-gray-500">Lessons</p>
                       </div>
                       <div>

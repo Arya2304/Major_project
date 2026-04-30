@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { FaVideo, FaVolumeMute, FaVolumeUp, FaComment } from 'react-icons/fa';
 
 /**
  * AccessibleVideo.jsx — Phase 4
@@ -184,7 +185,7 @@ const AccessibleVideo = ({ src, title = 'Video Player', captions = [] }) => {
         // Placeholder
         <div className="w-full aspect-video bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-6xl mb-4">🎥</div>
+            <FaVideo className="text-6xl mb-4 mx-auto text-white" />
             <p className="text-white font-semibold">{title}</p>
             <p className="text-white/60 text-sm mt-2">Video placeholder</p>
           </div>
@@ -236,7 +237,7 @@ const AccessibleVideo = ({ src, title = 'Video Player', captions = [] }) => {
               aria-label={isMuted ? 'Unmute' : 'Mute'}
               title={`${isMuted ? 'Unmute' : 'Mute'} (M)`}
             >
-              <span className="text-xl">{isMuted ? '🔇' : '🔊'}</span>
+              {isMuted ? <FaVolumeMute className="text-xl" /> : <FaVolumeUp className="text-xl" />}
             </button>
 
             {/* Time Display */}
@@ -276,7 +277,7 @@ const AccessibleVideo = ({ src, title = 'Video Player', captions = [] }) => {
                 aria-label={showCaptions ? 'Hide captions' : 'Show captions'}
                 title={`${showCaptions ? 'Hide' : 'Show'} Captions (C)`}
               >
-                <span className="text-xl">💬</span>
+                <FaComment className="text-xl" />
               </button>
             )}
 

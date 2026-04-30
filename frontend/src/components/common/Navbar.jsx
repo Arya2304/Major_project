@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FaHandPeace } from 'react-icons/fa';
 import StreakCounter from '../StreakCounter';
 
 /**
@@ -59,7 +60,7 @@ const Navbar = () => {
             aria-label="SignLearn home"
             onClick={handleLinkClick}
           >
-            <span className="text-2xl">🤟</span>
+            <FaHandPeace className="text-2xl" />
             <span className="hidden sm:inline font-display">SignLearn</span>
           </Link>
 
@@ -87,18 +88,6 @@ const Navbar = () => {
               <>
                 {/* Streak Counter */}
                 <StreakCounter streak={userStreak} size="compact" />
-
-                <Link
-                  to="/dashboard"
-                  className={`nav-link text-base font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary-500 rounded px-2 py-1 ${
-                    isActive('/dashboard')
-                      ? 'nav-link-active text-primary-600 border-b-2 border-primary-500'
-                      : 'text-gray-700 hover:text-primary-600'
-                  }`}
-                  aria-current={isActive('/dashboard') ? 'page' : undefined}
-                >
-                  Dashboard
-                </Link>
                 <div className="flex items-center gap-3 pl-3 border-l border-gray-300">
                   <span className="text-gray-600 text-sm font-medium">
                     {user?.email?.split('@')[0] || 'User'}
@@ -189,19 +178,6 @@ const Navbar = () => {
                   <div className="px-4 py-3">
                     <StreakCounter streak={userStreak} size="compact" />
                   </div>
-
-                  <Link
-                    to="/dashboard"
-                    onClick={handleLinkClick}
-                    className={`px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                      isActive('/dashboard')
-                        ? 'bg-primary-50 text-primary-600 border-l-4 border-primary-500'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                    aria-current={isActive('/dashboard') ? 'page' : undefined}
-                  >
-                    Dashboard
-                  </Link>
                   <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
                     <span className="text-gray-600 text-sm font-medium px-4">
                       {user?.email?.split('@')[0] || 'User'}

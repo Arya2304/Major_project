@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { coursesAPI } from '../api/courses';
 import { progressAPI } from '../api/progress';
-import { getCourseById } from '../data/mockData';
+import { getCourseById, getCourseLessons } from '../data/mockData';
 import Loader from '../components/common/Loader';
+import { FaStar } from 'react-icons/fa';
 import './CourseDetail.css';
 
 const CourseDetail = () => {
@@ -37,7 +38,7 @@ const CourseDetail = () => {
         const mockCourse = getCourseById(parseInt(paramId));
         if (mockCourse) {
           setCourse(mockCourse);
-          setLessons(mockCourse.lessons || []);
+          setLessons(getCourseLessons(mockCourse.id) || []);
           console.log('[CourseDetail] Course loaded from mock data:', mockCourse.title);
         } else {
           console.error('[CourseDetail] Course not found in mock data:', paramId);
@@ -83,7 +84,7 @@ const CourseDetail = () => {
     try {
       if (!isDashboard) {
         await coursesAPI.enrollInCourse(id);
-        navigate('/dashboard');
+        navigate('/learn');
       } else {
         // Navigate to next lesson in dashboard
         const nextLesson = getNextLesson();
@@ -187,7 +188,7 @@ const CourseDetail = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Rating</p>
-                  <p className="font-bold text-dark-500">⭐ {course.rating}</p>
+                  <p className="font-bold text-dark-500"><FaStar className="inline-block mr-1" /> {course.rating}</p>
                 </div>
               </div>
             </div>

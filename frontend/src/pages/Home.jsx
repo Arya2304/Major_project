@@ -1,224 +1,214 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import AccessibleButton from '../components/common/AccessibleButton';
-import AccessibleCard from '../components/common/AccessibleCard';
+import instructorImg1 from '../../assets/img1.png';
+import instructorImg2 from '../../assets/img 2.png';
+import { FaComments, FaBrain, FaHeadset, FaStar, FaUsers } from 'react-icons/fa';
 
-/**
- * Home.jsx — Phase 3
- * Landing page for new visitors
- * Sections: Hero, Features, Testimonials, Final CTA
- * Uses Phase 2 components and Phase 1 design tokens
- * NOTE: Wrapped by PublicLayout in AppRoutes, so no layout wrapper needed
- */
 const Home = () => {
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // Feature cards data
-  const features = [
-    {
-      icon: '🤟',
-      title: 'Interactive Lessons',
-      description: 'Learn through engaging video demonstrations with real-world sign language examples and clear explanations.',
-    },
-    {
-      icon: '📊',
-      title: 'Progress Tracking',
-      description: 'Monitor your learning journey with detailed statistics, achievements, and milestone celebrations.',
-    },
-    {
-      icon: '👥',
-      title: 'Community Practice',
-      description: 'Connect with fellow learners, practice together, and build confidence in a supportive environment.',
-    },
-    {
-      icon: '🎓',
-      title: 'Expert Instructors',
-      description: 'Learn from certified deaf educators and native sign language speakers with years of experience.',
-    },
-  ];
-
-  // Testimonial data
-  const testimonials = [
-    {
-      quote: 'SignLearn completely changed how I communicate with my deaf friends. The video lessons are so clear and engaging!',
-      author: 'Priya Sharma',
-      role: 'Student, Delhi',
-      avatar: '👩',
-    },
-    {
-      quote: 'As a hearing parent, this platform helped me learn ISL at my own pace. Highly recommended for anyone serious about sign language.',
-      author: 'Rajesh Kumar',
-      role: 'Parent, Mumbai',
-      avatar: '👨',
-    },
-    {
-      quote: 'The interactive practice sessions are fantastic. I feel confident using ISL in real conversations now.',
-      author: 'Aisha Patel',
-      role: 'Professional, Bangalore',
-      avatar: '👩‍💼',
-    },
-  ];
 
   return (
-    <>
-      {/* ========== HERO SECTION ========== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white section-gap">
-        {/* Decorative blobs */}
-        <div className="absolute top-10 right-5 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
-        <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
-
-        {/* Hero Content */}
-        <div className="page-container relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
-            <div>
-              <h1 className="text-5xl md:text-6xl font-display font-bold mb-6 leading-tight">
-                Learn Indian Sign Language
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white py-20 md:py-32 px-4">
+        {/* Subtle gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none"></div>
+        {/* Floating decoration elements */}
+        <div className="absolute top-20 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto">
+          {/* Main content grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
+            {/* Left side - Text content */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight leading-tight drop-shadow-lg">
+                Your Sign Language Journey Starts Here
               </h1>
-              <p className="text-lg md:text-xl mb-8 text-white/90 leading-relaxed max-w-xl">
-                Connect, communicate, and build friendships through ISL. Learn at your own pace with interactive video lessons from expert instructors.
+              <p className="text-lg md:text-xl mb-8 opacity-90 font-light leading-relaxed drop-shadow">
+                Get Hands on practice for ISL, ASL, and BSL with our comprehensive video courses designed for all skill levels.
               </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <AccessibleButton
-                  variant="ghost"
-                  size="lg"
-                  onClick={() => navigate(isAuthenticated ? '/learn' : '/register')}
-                  aria-label={isAuthenticated ? 'Start learning' : 'Register for free'}
-                  className="text-white border-white hover:bg-white/20"
-                >
-                  {isAuthenticated ? '▶️ Start Learning' : '🎓 Get Started Free'}
-                </AccessibleButton>
-                <AccessibleButton
-                  variant="outline"
-                  size="lg"
-                  onClick={() => navigate('/courses')}
-                  aria-label="Browse all courses"
-                  className="text-white border-white hover:bg-white/10"
-                >
-                  📚 Browse Courses
-                </AccessibleButton>
+              <div className="flex gap-4 justify-center lg:justify-start flex-wrap">
+                {!isAuthenticated ? (
+                  <>
+                    <Link to="/register" className="bg-yellow-400 text-dark-500 px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-300 hover:scale-105 active:scale-100 transition-all duration-300 min-h-[56px] flex items-center shadow-xl hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-white drop-shadow-lg">
+                      Get Started
+                    </Link>
+                    <Link to="/signs" className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-white/20 hover:scale-105 active:scale-100 transition-all duration-300 min-h-[56px] flex items-center backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-white">
+                      Explore Now
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/signs" className="bg-yellow-400 text-dark-500 px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-300 hover:scale-105 active:scale-100 transition-all duration-300 min-h-[56px] flex items-center shadow-xl hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-white drop-shadow-lg">
+                      Start Learning
+                    </Link>
+                    <Link to="/learn" className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-white/20 hover:scale-105 active:scale-100 transition-all duration-300 min-h-[56px] flex items-center backdrop-blur-sm focus-visible:ring-2 focus-visible:ring-white">
+                      Learn
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Right: Video Placeholder */}
-            <div className="hidden lg:block">
-              <div className="aspect-video bg-black/30 rounded-2xl border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="text-7xl">🎥</div>
-                  <p className="text-white/80 font-semibold">Video Placeholder</p>
+            {/* Right side - Instructor profiles */}
+            <div className="flex justify-center lg:justify-end items-center gap-8">
+              {/* Instructor 1 */}
+              <div className="flex flex-col items-center">
+                <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-200 p-1 shadow-lg overflow-hidden">
+                  <img 
+                    src={instructorImg1} 
+                    alt="Expert Instructor" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
+                <p className="mt-4 text-sm font-semibold text-center drop-shadow">Expert Instructor</p>
               </div>
-            </div>
-          </div>
 
-          {/* Mobile Video Placeholder */}
-          <div className="lg:hidden mt-12">
-            <div className="aspect-video bg-black/30 rounded-2xl border-2 border-white/30 flex items-center justify-center backdrop-blur-sm">
-              <div className="flex flex-col items-center gap-4">
-                <div className="text-7xl">🎥</div>
-                <p className="text-white/80 font-semibold">Interactive Video Demo</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========== FEATURES SECTION ========== */}
-      <section className="bg-gray-50 section-gap">
-        <div className="page-container">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
-              Why Choose SignLearn?
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Designed by deaf educators and language experts for effective sign language learning.
-            </p>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, idx) => (
-              <AccessibleCard
-                key={idx}
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                variant="light"
-                className="text-center"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========== TESTIMONIALS SECTION ========== */}
-      <section className="bg-white section-gap">
-        <div className="page-container">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
-              Loved by Learners
-            </h2>
-            <p className="text-lg text-gray-600">
-              Join thousands who have transformed their sign language skills
-            </p>
-          </div>
-
-          {/* Testimonials Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, idx) => (
-              <div
-                key={idx}
-                className="card-hover p-8 flex flex-col"
-              >
-                {/* Quote Text */}
-                <blockquote className="italic text-gray-700 mb-6 flex-1 text-lg leading-relaxed">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </blockquote>
-
-                {/* Author Info */}
-                <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-2xl">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{testimonial.author}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                  </div>
+              {/* Instructor 2 */}
+              <div className="flex flex-col items-center">
+                <div className="w-56 h-56 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-200 p-1 shadow-lg overflow-hidden">
+                  <img 
+                    src={instructorImg2} 
+                    alt="Expert Instructor" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </div>
+                <p className="mt-4 text-sm font-semibold text-center drop-shadow">Expert Instructor</p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ========== FINAL CTA SECTION ========== */}
-      <section className="bg-gradient-to-r from-primary-500 to-accent-500 text-white section-gap">
-        <div className="page-container text-center">
-          <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 max-w-2xl mx-auto">
-            Ready to Start Learning?
-          </h2>
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-xl mx-auto">
-            Join our community of learners and begin your sign language journey today.
-          </p>
+      {/* Fun Learning Section */}
+      <section className="py-20 md:py-32 px-4 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+            {/* Left illustration */}
+            <div className="flex justify-center lg:justify-start">
+              <div className="text-6xl text-yellow-500">
+                <FaUsers />
+              </div>
+            </div>
 
+            {/* Center content */}
+            <div className="text-center">
+              <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
+                The fun, fast and easy way to learn <span className="text-yellow-500">Sign Language</span>
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Our bite-sized, interactive lessons will help you develop the skills you need for real-life communication. And because we know you are busy, we made sure that with just 10 minutes a day, you will be able to engage in your first conversations in no time.
+              </p>
+            </div>
+
+            {/* Right illustration */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="text-6xl text-yellow-500">
+                <FaUsers />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Here is how it works Section */}
+      <section className="py-24 md:py-32 px-4 bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-5xl md:text-6xl font-black text-center mb-16 text-blue-600 tracking-tight">Here is how it works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* Card 1 - Practical conversation skills */}
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center text-4xl shadow-lg text-yellow-600">
+                <FaComments />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3 text-blue-600">Practical conversation skills</h3>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  Immerse yourself in Sign Language through interactive and useful dialogs that get you conversational fast.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 2 - Remember what you've learnt */}
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center text-4xl shadow-lg text-white">
+                <FaBrain />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3 text-blue-600">Remember what you've learnt</h3>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  Use our vocabulary trainer to reinforce your memory and retain your learnings for the long term.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 3 - Live practice with IoT devices */}
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center text-4xl shadow-lg text-white">
+                <FaHeadset />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3 text-blue-600">Live practice with IoT devices</h3>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  Connect wearable IoT devices for real-time hand gesture recognition and get instant feedback while practicing sign language.
+                </p>
+              </div>
+            </div>
+
+            {/* Card 4 - Sign with confidence */}
+            <div className="flex gap-6 items-start">
+              <div className="flex-shrink-0 w-24 h-24 bg-yellow-500 rounded-full flex items-center justify-center text-4xl shadow-lg text-white">
+                <FaStar />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3 text-blue-600">Sign with confidence</h3>
+                <p className="text-gray-700 text-base leading-relaxed">
+                  Unsure whether you are signing the right way? Refine your execution with the Lingvano Sign mirror and gain the confidence to sign!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Building Bridges Section */}
+      <section className="py-24 md:py-32 px-4 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex flex-col items-center">
+            {/* Illustration Box */}
+            <div className="w-full max-w-2xl mb-12">
+              <div className="bg-white border-2 border-yellow-400 rounded-3xl p-12 shadow-lg">
+                <div className="text-9xl">🤝</div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div>
+              <h2 className="text-5xl md:text-6xl font-black mb-8 text-yellow-500 tracking-tight leading-tight">
+                Building bridges
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
+                Our mission is to help you connect with Deaf family members, friends, colleagues and neighbors. Start learning American Sign Language now and help to build bridges.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative bg-gradient-to-b from-primary-50 via-white to-gray-50 py-12 md:py-16 px-4 text-center border-t border-primary-200">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-dark-500 tracking-tight">Ready to Transform Your Skills?</h2>
+          <p className="text-lg md:text-lg mb-8 text-gray-600 font-light leading-relaxed max-w-xl mx-auto">Begin your sign language journey with our comprehensive, beginner-friendly courses. No experience necessary.</p>
           {!isAuthenticated && (
-            <AccessibleButton
-              variant="ghost"
-              size="lg"
-              onClick={() => navigate('/register')}
-              aria-label="Register for free"
-              className="text-white border-white hover:bg-white/20"
-            >
-              ✨ Create Free Account
-            </AccessibleButton>
+            <Link to="/register" className="inline-block bg-primary-500 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-primary-600 active:bg-primary-700 hover:scale-105 active:scale-100 transition-all duration-300 min-h-[56px] flex items-center justify-center shadow-xl hover:shadow-2xl focus-visible:ring-2 focus-visible:ring-primary-300">
+              Start Learning Today
+            </Link>
           )}
         </div>
       </section>
-    </>
+    </div>
   );
 };
 
