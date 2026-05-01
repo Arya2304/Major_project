@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from .models import Course, Lesson, Enrollment
 from apps.sign_language.serializers import SignSerializer
@@ -17,7 +18,37 @@ class LessonSerializer(serializers.ModelSerializer):
         # Handle sign_ids if provided
         if 'sign_ids' in data:
             from apps.sign_language.models import Sign
-            sign_ids = data.pop('sign_ids', [])
+            # `sign_ids` may come as:
+            # - list of values (e.g. JSON)
+            # - a single string (e.g. "1" or "[1,2]" or "1,2")
+            # - multipart form keys where multiple values may exist
+            if hasattr(data, 'getlist'):
+                sign_ids = data.getlist('sign_ids')
+                # `getlist` returns [] if key doesn't exist
+                if sign_ids:
+                    # Remove from data so it doesn't end up in `super()`
+                    try:
+                        data.pop('sign_ids', None)
+                    except Exception:
+                        pass
+            else:
+                sign_ids = data.pop('sign_ids', [])
+
+            if isinstance(sign_ids, str):
+                # Try JSON first, then comma-separated.
+                try:
+                    parsed = json.loads(sign_ids)
+                    sign_ids = parsed if isinstance(parsed, list) else [parsed]
+                except Exception:
+                    if sign_ids.strip().endswith(']') and sign_ids.strip().startswith('['):
+                        sign_ids = [s for s in sign_ids.strip('[]').split(',') if s.strip()]
+                    elif ',' in sign_ids:
+                        sign_ids = [s.strip() for s in sign_ids.split(',') if s.strip()]
+                    else:
+                        sign_ids = [sign_ids] if sign_ids.strip() else []
+
+            # Normalize to list[int] where possible.
+            sign_ids = [int(s) for s in sign_ids if str(s).strip().isdigit()]
             ret = super().to_internal_value(data)
             ret['sign_ids'] = sign_ids
             return ret
@@ -71,6 +102,9 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseDetailSerializer(CourseSerializer):
     """Extended serializer for course detail view with lessons"""
     lessons = LessonSerializer(many=True, read_only=True)
+
+    class Meta(CourseSerializer.Meta):
+        fields = [*CourseSerializer.Meta.fields, 'lessons']
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):

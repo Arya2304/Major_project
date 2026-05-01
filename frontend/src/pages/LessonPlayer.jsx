@@ -3,17 +3,24 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactPlayer from 'react-player';
 import { coursesAPI } from '../api/courses';
 import { progressAPI } from '../api/progress';
-import { getCourseById, getLesson } from '../data/mockData';
 import Loader from '../components/common/Loader';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
+
 const LessonPlayer = () => {
-  const { courseId, lessonId } = useParams();
+  const { lessonId } = useParams();
   const navigate = useNavigate();
   const playerRef = useRef(null);
 
   // State management
   const [course, setCourse] = useState(null);
   const [lesson, setLesson] = useState(null);
+  const [courseId, setCourseId] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [lessonProgress, setLessonProgress] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,18 +33,24 @@ const LessonPlayer = () => {
     const fetchLessonData = async () => {
       setLoading(true);
       try {
-        // Fetch from mock data (can switch to API later)
-        const courseData = getCourseById(parseInt(courseId));
-        const lessonData = getLesson(parseInt(lessonId));
+        const parsedLessonId = parseInt(lessonId, 10);
+        if (!parsedLessonId) throw new Error('Invalid lesson id');
 
-        if (courseData && lessonData) {
-          setCourse(courseData);
-          setLesson(lessonData);
-          setLessons(courseData.lessons || []);
+        // Fetch lesson first, then derive course from it.
+        const lessonData = await coursesAPI.getLesson(parsedLessonId);
+        const derivedCourseId = lessonData?.course;
+        if (!derivedCourseId) throw new Error('Lesson is missing course id');
+
+        const courseData = await coursesAPI.getCourse(derivedCourseId);
+
+        setCourseId(derivedCourseId);
+        setCourse(courseData);
+        setLesson(lessonData);
+        setLessons(courseData.lessons || []);
 
           // Fetch lesson progress
           try {
-            const progress = await progressAPI.getLessonProgress(parseInt(lessonId));
+            const progress = await progressAPI.getLessonProgress(parsedLessonId);
             setLessonProgress(progress);
             if (progress.is_completed) {
               setShowCompletionUI(true);
@@ -45,7 +58,6 @@ const LessonPlayer = () => {
           } catch (error) {
             console.log('Lesson progress not found, creating new tracking');
           }
-        }
       } catch (error) {
         console.error('Failed to fetch lesson data:', error);
       } finally {
@@ -54,30 +66,39 @@ const LessonPlayer = () => {
     };
 
     fetchLessonData();
-  }, [courseId, lessonId]);
+  }, [lessonId]);
 
   // Handle marking lesson as complete
   const handleMarkComplete = async () => {
     setMarking(true);
     try {
-      await progressAPI.updateLessonProgress(parseInt(lessonId), {
+      const parsedLessonId = parseInt(lessonId, 10);
+      const parsedCourseId = parseInt(courseId, 10);
+      if (!parsedLessonId || !parsedCourseId) throw new Error('Missing ids to update progress');
+
+      await progressAPI.updateLessonProgress(parsedLessonId, {
         is_completed: true,
         watch_duration: Math.round(watchTime),
       });
 
       // Update enrollment progress
       try {
-        const enrollment = await coursesAPI.getEnrollment(parseInt(courseId));
-        if (enrollment) {
-          const totalLessons = lessons.length;
-          const completedLessons = lessons.filter((l) => {
-            if (l.id === parseInt(lessonId)) return true;
-            // This is simplified - in real app would need to check all progress
-            return false;
-          }).length;
-          const progress = Math.round((completedLessons / totalLessons) * 100);
-          await coursesAPI.updateProgress(enrollment.id, progress);
-        }
+        const enrollment = await coursesAPI.getEnrollment(parsedCourseId);
+        if (!enrollment) return;
+
+        const allProgress = await progressAPI.getAllLessonProgress();
+        const progressList = allProgress?.results || allProgress || [];
+
+        const totalLessons = lessons.length || 0;
+        const completedCount = progressList.filter((p) => {
+          if (!p?.is_completed) return false;
+          const lessonCourseId =
+            typeof p?.lesson?.course === 'object' ? p.lesson.course.id : p?.lesson?.course;
+          return Number(lessonCourseId) === parsedCourseId;
+        }).length;
+
+        const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+        await coursesAPI.updateProgress(enrollment.id, progress);
       } catch (error) {
         console.error('Failed to update enrollment progress:', error);
       }
@@ -122,7 +143,7 @@ const LessonPlayer = () => {
     return (
       <div className="p-8">
         <p className="text-red-600 text-lg mb-4">Lesson not found.</p>
-        <Link to={`/learn/${courseId}`} className="text-primary-600 hover:text-primary-700 font-medium">
+        <Link to={`/learn/${courseId ?? ''}`} className="text-primary-600 hover:text-primary-700 font-medium">
           ← Back to Course
         </Link>
       </div>
@@ -148,10 +169,10 @@ const LessonPlayer = () => {
           <div className="lg:col-span-2">
             {/* Video Player Container */}
             <div className="bg-black rounded-2xl overflow-hidden aspect-video flex items-center justify-center shadow-xl mb-8 relative group">
-              {lesson.videoUrl ? (
+              {lesson.video ? (
                 <ReactPlayer
                   ref={playerRef}
-                  url={lesson.videoUrl}
+                  url={toAbsoluteMediaUrl(lesson.video)}
                   playing={false}
                   controls={true}
                   width="100%"
@@ -163,8 +184,7 @@ const LessonPlayer = () => {
                 <div className="text-center text-white">
                   <div className="text-6xl mb-4">🎥</div>
                   <p className="text-xl font-bold">Video Content</p>
-                  <p className="text-sm text-gray-400 mt-2">Mock video placeholder</p>
-                  <p className="text-xs text-gray-500 mt-1">In production, actual videos would stream here</p>
+                  <p className="text-sm text-gray-400 mt-2">Video not available for this lesson</p>
                 </div>
               )}
             </div>
@@ -183,10 +203,10 @@ const LessonPlayer = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">📊</span>
+                  <span className="text-2xl">📚</span>
                   <div>
-                    <p className="text-xs text-gray-600">Difficulty</p>
-                    <p className="font-bold text-dark-500">{lesson.difficulty}</p>
+                    <p className="text-xs text-gray-600">Signs in lesson</p>
+                    <p className="font-bold text-dark-500">{lesson.signs ? lesson.signs.length : 0}</p>
                   </div>
                 </div>
               </div>
@@ -218,7 +238,7 @@ const LessonPlayer = () => {
                         <div className="text-2xl">{exercise.type === 'practice' ? '✋' : '❓'}</div>
                         <div className="flex-1">
                           <p className="font-bold text-dark-500">{exercise.text}</p>
-                          <p className="text-xs text-gray-600 uppercase tracking-wider mt-1 capitalize">{exercise.type}</p>
+                          <p className="text-xs text-gray-600 uppercase tracking-wider mt-1">{exercise.type}</p>
                         </div>
                       </div>
                     </div>
@@ -320,7 +340,7 @@ const LessonPlayer = () => {
                         ></div>
                       </div>
                     </div>
-                    {lesson.videoUrl && duration > 0 && (
+                    {lesson.video && duration > 0 && (
                       <div>
                         <p className="text-xs text-primary-600 font-bold uppercase tracking-wider mb-1">Video Progress</p>
                         <p className="text-xs text-primary-600">

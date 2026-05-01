@@ -54,11 +54,13 @@ const Register = () => {
 
     setLoading(true);
 
-    const { password_confirm, ...submitData } = formData;
-    // Ensure role is properly formatted
+    // Backend requires `password_confirm` as well.
+    const submitData = { ...formData };
+    // Ensure role is properly formatted (optional).
     if (submitData.role === '' || submitData.role === null) {
-      delete submitData.role;
+      submitData.role = null;
     }
+
     const result = await register(submitData);
 
     if (result.success) {

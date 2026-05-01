@@ -1,21 +1,81 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { mockCourses } from '../data/mockData';
+import { coursesAPI } from '../api/courses';
+import { progressAPI } from '../api/progress';
+import Loader from '../components/common/Loader';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [userProgress, setUserProgress] = useState({
-    lessonsCompleted: 12,
-    signsLearned: 45,
-    streak: 7,
-    currentCourse: mockCourses[0],
-    courseProgress: 65,
-  });
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [currentEnrollment, setCurrentEnrollment] = useState(null);
+  const [recentLessons, setRecentLessons] = useState([]);
 
-  // Recent lessons from current course
-  const recentLessons = userProgress.currentCourse?.lessons?.slice(0, 4) || [];
+  useEffect(() => {
+    const loadDashboard = async () => {
+      setLoading(true);
+      try {
+        const [statsData, myCoursesData] = await Promise.all([
+          progressAPI.getStats(),
+          coursesAPI.getMyCourses(),
+        ]);
+
+        const myEnrollments = myCoursesData?.results || myCoursesData || [];
+
+        // Prefer an in-progress course, fall back to the first enrollment.
+        const current =
+          [...myEnrollments]
+            .sort((a, b) => (b?.progress_percentage ?? 0) - (a?.progress_percentage ?? 0))
+            .find((e) => !e?.is_completed) ||
+          myEnrollments[0] ||
+          null;
+
+        setStats(statsData);
+        setCurrentEnrollment(current);
+
+        // Recent lessons within the current course (from lesson progress API)
+        if (current?.course?.id) {
+          const allLessonProgress = await progressAPI.getAllLessonProgress();
+          const progressList = allLessonProgress?.results || allLessonProgress || [];
+
+          const courseId = current.course.id;
+          const lessons = progressList
+            .filter((p) => {
+              const lessonCourseId =
+                typeof p?.lesson?.course === 'object' ? p.lesson.course.id : p?.lesson?.course;
+              return Number(lessonCourseId) === Number(courseId) && p?.lesson;
+            })
+            .sort((a, b) => {
+              const aTime = a?.last_watched_at ? new Date(a.last_watched_at).getTime() : 0;
+              const bTime = b?.last_watched_at ? new Date(b.last_watched_at).getTime() : 0;
+              return bTime - aTime;
+            })
+            .slice(0, 4)
+            .map((p) => p.lesson);
+
+          setRecentLessons(lessons);
+        } else {
+          setRecentLessons([]);
+        }
+      } catch (error) {
+        console.error('[Dashboard] Failed to load dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (loading) return <Loader />;
+
+  const signsLearned = stats?.total_signs_learned ?? 0;
+  const lessonsCompleted = stats?.total_lessons_completed ?? 0;
+  const streak = stats?.current_streak ?? 0;
+  const courseProgress = currentEnrollment?.progress_percentage ?? 0;
+  const currentCourse = currentEnrollment?.course ?? null;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -37,7 +97,7 @@ const Dashboard = () => {
             <div className="text-4xl group-hover:scale-110 transition-transform duration-200">✋</div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Signs Learned</p>
-              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.signsLearned}</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{signsLearned}</p>
             </div>
           </div>
         </div>
@@ -47,7 +107,7 @@ const Dashboard = () => {
             <div className="text-4xl group-hover:scale-110 transition-transform duration-200">📚</div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Lessons Done</p>
-              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.lessonsCompleted}</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{lessonsCompleted}</p>
             </div>
           </div>
         </div>
@@ -57,7 +117,7 @@ const Dashboard = () => {
             <div className="text-4xl group-hover:scale-110 transition-transform duration-200">🔥</div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Day Streak</p>
-              <p className="text-3xl font-black text-dark-500 mt-1">{userProgress.streak}</p>
+              <p className="text-3xl font-black text-dark-500 mt-1">{streak}</p>
             </div>
           </div>
         </div>
@@ -67,7 +127,7 @@ const Dashboard = () => {
             <div className="text-4xl group-hover:scale-110 transition-transform duration-200">🎯</div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Progress</p>
-              <p className="text-3xl font-black text-primary-600 mt-1">{userProgress.courseProgress}%</p>
+              <p className="text-3xl font-black text-primary-600 mt-1">{courseProgress}%</p>
             </div>
           </div>
         </div>
@@ -83,23 +143,33 @@ const Dashboard = () => {
 
             {/* Card Content */}
             <div className="p-8">
-              {userProgress.currentCourse && (
+              {currentCourse ? (
                 <>
                   <div className="flex items-start gap-6 mb-8">
-                    <div className="text-6xl drop-shadow-sm">{userProgress.currentCourse.thumbnail}</div>
+                    <div className="text-6xl drop-shadow-sm">
+                      {currentCourse.thumbnail ? (
+                        <img
+                          src={currentCourse.thumbnail}
+                          alt={currentCourse.title}
+                          className="w-24 h-24 rounded-lg object-cover"
+                        />
+                      ) : (
+                        '📚'
+                      )}
+                    </div>
                     <div className="flex-1">
                       <h3 className="text-2xl font-black text-dark-500 mb-1">
-                        {userProgress.currentCourse.title}
+                        {currentCourse.title}
                       </h3>
                       <p className="text-gray-600 font-medium mb-4 leading-relaxed">
-                        {userProgress.currentCourse.subtitle}
+                        {currentCourse.description?.slice(0, 120) || ''}
                       </p>
                       <div className="flex gap-3 mb-6">
                         <span className="px-3 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold uppercase tracking-wider">
-                          {userProgress.currentCourse.difficulty}
+                          {currentCourse.difficulty_display || currentCourse.difficulty_level}
                         </span>
                         <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-bold uppercase tracking-wider">
-                          {userProgress.currentCourse.language}
+                          {currentCourse.language}
                         </span>
                       </div>
 
@@ -108,13 +178,13 @@ const Dashboard = () => {
                         <div className="flex justify-between mb-2">
                           <span className="text-sm font-bold text-gray-700">Course Progress</span>
                           <span className="text-sm font-bold text-primary-600">
-                            {userProgress.courseProgress}% Complete
+                            {courseProgress}% Complete
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                           <div
                             className="bg-gradient-to-r from-primary-500 to-primary-600 h-full transition-all duration-500 rounded-full shadow-sm"
-                            style={{ width: `${userProgress.courseProgress}%` }}
+                            style={{ width: `${courseProgress}%` }}
                           />
                         </div>
                       </div>
@@ -122,7 +192,7 @@ const Dashboard = () => {
                       {/* Buttons */}
                       <div className="flex gap-3">
                         <button
-                          onClick={() => navigate(`/learn/${userProgress.currentCourse.id}`)}
+                          onClick={() => navigate(`/learn/${currentCourse.id}`)}
                           className="px-6 py-2.5 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 hover:shadow-md active:scale-95 transition-all duration-200 text-sm"
                         >
                           Continue Course →
@@ -137,6 +207,10 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </>
+              ) : (
+                <div className="text-gray-600 font-medium">
+                  You are not enrolled in any course yet.
+                </div>
               )}
             </div>
           </div>

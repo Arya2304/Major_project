@@ -7,9 +7,9 @@ import {
   nextSign,
   endSession,
   disconnectDevice,
-  getPracticeStats,
 } from '../lib/api/practice';
 import Loader from '../components/common/Loader';
+import { progressAPI } from '../api/progress';
 import './Practice.css';
 
 const Practice = () => {
@@ -60,8 +60,15 @@ const Practice = () => {
     const loadStats = async () => {
       try {
         console.log('[Practice] Loading practice statistics...');
-        const data = await getPracticeStats();
-        setPracticeStats(data);
+        const statsData = await progressAPI.getStats();
+        setPracticeStats({
+          // These mappings keep the UI populated with real backend values.
+          totalSessions: statsData?.total_lessons_completed ?? 0,
+          totalPracticeTime: Math.round((statsData?.total_practice_time ?? 0) / 60), // seconds -> minutes
+          signsLearned: statsData?.total_signs_learned ?? 0,
+          averageAccuracy: 0, // Not provided by backend stats yet
+          currentStreak: statsData?.current_streak ?? 0,
+        });
       } catch (err) {
         console.error('[Practice] Error loading stats:', err);
         setError('Failed to load practice statistics');

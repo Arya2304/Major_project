@@ -1,25 +1,60 @@
-import { useState, useMemo } from 'react';
-import { mockDictionary, getDictionaryCategories } from '../data/mockData';
+import { useEffect, useMemo, useState } from 'react';
+import { signsAPI } from '../api/signs';
+import SignCard from '../components/signs/SignCard';
+import Loader from '../components/common/Loader';
 
 const Dictionary = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(''); // empty => All
   const [selectedLevel, setSelectedLevel] = useState('All');
+  const [categories, setCategories] = useState([]);
+  const [signs, setSigns] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = ['All', ...getDictionaryCategories()];
-  const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+  const levels = useMemo(
+    () => [
+      { label: 'All', value: 'All' },
+      { label: 'Beginner', value: '1' },
+      { label: 'Intermediate', value: '2' },
+      { label: 'Advanced', value: '3' },
+    ],
+    []
+  );
 
-  const filteredDictionary = useMemo(() => {
-    return mockDictionary.filter((item) => {
-      const matchesSearch =
-        item.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-      const matchesLevel = selectedLevel === 'All' || item.difficulty === selectedLevel;
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await signsAPI.getCategories();
+        setCategories(data?.results || data || []);
+      } catch (error) {
+        console.error('[Dictionary] Failed to load categories:', error);
+      }
+    };
 
-      return matchesSearch && matchesCategory && matchesLevel;
-    });
-  }, [searchQuery, selectedCategory, selectedLevel]);
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const params = {};
+        if (selectedCategoryId) params.category = selectedCategoryId;
+        if (selectedLevel !== 'All') params.difficulty = selectedLevel;
+        if (searchQuery.trim()) params.search = searchQuery.trim();
+
+        const data = await signsAPI.getSigns(params);
+        setSigns(data?.results || data || []);
+      } catch (error) {
+        console.error('[Dictionary] Failed to fetch signs:', error);
+        setSigns([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCategoryId, selectedLevel]);
 
   return (
     <div className="p-8">
@@ -47,17 +82,27 @@ const Dictionary = () => {
           <div>
             <label className="block text-sm font-bold text-dark-500 mb-3">Category</label>
             <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedCategoryId('')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  !selectedCategoryId ? 'bg-primary-500 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                All
+              </button>
               {categories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategoryId(String(cat.id))}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedCategory === cat
+                    String(selectedCategoryId) === String(cat.id)
                       ? 'bg-primary-500 text-white shadow-md'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -69,13 +114,16 @@ const Dictionary = () => {
             <div className="flex flex-wrap gap-2">
               {levels.map((level) => (
                 <button
-                  key={level}
-                  onClick={() => setSelectedLevel(level)}
+                  key={level.value}
+                  type="button"
+                  onClick={() => setSelectedLevel(level.value)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedLevel === level ? 'bg-primary-500 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    selectedLevel === level.value
+                      ? 'bg-primary-500 text-white shadow-md'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {level}
+                  {level.label}
                 </button>
               ))}
             </div>
@@ -86,61 +134,27 @@ const Dictionary = () => {
       {/* Results Count */}
       <div className="mb-6">
         <p className="text-gray-600 font-medium">
-          Showing {filteredDictionary.length} of {mockDictionary.length} signs
+          Showing {signs.length} signs
         </p>
       </div>
 
       {/* Dictionary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDictionary.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300 border border-gray-200 cursor-pointer group"
-          >
-            {/* Video Placeholder */}
-            <div className="h-40 bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="text-5xl mb-2">🎥</div>
-                <p className="text-xs text-white/80">Video: {item.videoUrl}</p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-2xl font-black text-dark-500 group-hover:text-primary-600 transition-colors">{item.word}</h3>
-                <span className="inline-block px-3 py-1 bg-primary-100 text-primary-600 text-xs font-bold rounded-full">
-                  {item.difficulty}
-                </span>
-              </div>
-
-              <div className="mb-3">
-                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-full">
-                  {item.category}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-600 leading-relaxed mb-4 min-h-[60px]">{item.description}</p>
-
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <span className="text-xs text-gray-500">{item.signType}</span>
-                <button className="px-3 py-2 bg-primary-500 text-white rounded-lg font-bold text-sm hover:bg-primary-600 transition-colors">
-                  Watch Video
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredDictionary.length === 0 && (
+      {loading ? (
+        <Loader />
+      ) : signs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {signs.map((sign) => (
+            <SignCard key={sign.id} sign={sign} />
+          ))}
+        </div>
+      ) : (
         <div className="text-center py-16">
           <p className="text-xl text-gray-600 mb-4">No signs found matching your search.</p>
           <button
+            type="button"
             onClick={() => {
               setSearchQuery('');
-              setSelectedCategory('All');
+              setSelectedCategoryId('');
               setSelectedLevel('All');
             }}
             className="px-6 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-colors"

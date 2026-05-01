@@ -42,15 +42,37 @@ export const coursesAPI = {
   },
 
   getEnrollment: async (courseId) => {
-    // Get enrollment for a specific course
-    const response = await api.get('/courses/enrollments/', { params: { course: courseId } });
-    const enrollments = response.data.results || response.data;
-    return enrollments.length > 0 ? enrollments[0] : null;
+    // Backend enrollment list is always for the current user; it doesn't filter by course id.
+    // So we fetch all enrollments and select the one that matches the requested course.
+    const response = await api.get('/courses/enrollments/');
+    const enrollments = response.data?.results || response.data || [];
+    const parsedCourseId = typeof courseId === 'string' ? parseInt(courseId, 10) : courseId;
+    return (
+      enrollments.find((e) => e?.course?.id === parsedCourseId) ||
+      null
+    );
   },
 
   updateProgress: async (enrollmentId, progress) => {
     const response = await api.post(`/courses/enrollments/${enrollmentId}/progress/`, {
       progress_percentage: progress,
+    });
+    return response.data;
+  },
+
+  createLesson: async (formData) => {
+    const response = await api.post('/courses/lessons/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  updateCourseThumbnail: async (courseId, thumbnailFile) => {
+    const fd = new FormData();
+    fd.append('thumbnail', thumbnailFile);
+
+    const response = await api.patch(`/courses/${courseId}/`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },

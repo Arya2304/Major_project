@@ -1,19 +1,58 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockCourses } from '../data/mockData';
+import { coursesAPI } from '../api/courses';
+import Loader from '../components/common/Loader';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
 
 const Learn = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('All');
   const [selectedLevel, setSelectedLevel] = useState('All');
 
-  const languages = ['All', ...new Set(mockCourses.map((c) => c.language))];
+  const [loading, setLoading] = useState(true);
+  const [courses, setCourses] = useState([]);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+      try {
+        const params = {};
+
+        if (selectedLanguage !== 'All') params.language = selectedLanguage;
+
+        const difficultyMap = {
+          Beginner: '1',
+          Intermediate: '2',
+          Advanced: '3',
+        };
+        if (selectedLevel !== 'All') params.difficulty = difficultyMap[selectedLevel];
+
+        // CourseListCreateView defaults to `published_only=true` so we only get published courses.
+        const data = await coursesAPI.getCourses(params);
+        setCourses(data?.results || data || []);
+      } catch (error) {
+        console.error('[Learn] Failed to fetch courses:', error);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [selectedLanguage, selectedLevel]);
+
+  const languages = useMemo(() => {
+    return ['All', ...new Set(courses.map((c) => c.language))];
+  }, [courses]);
+
   const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
-  const filteredCourses = mockCourses.filter((course) => {
-    const matchLanguage = selectedLanguage === 'All' || course.language === selectedLanguage;
-    const matchLevel = selectedLevel === 'All' || course.difficulty === selectedLevel;
-    return matchLanguage && matchLevel;
-  });
+  if (loading) return <Loader />;
 
   return (
     <div className="p-8">
@@ -68,7 +107,7 @@ const Learn = () => {
 
       {/* Courses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCourses.map((course) => (
+        {courses.map((course) => (
           <Link
             key={course.id}
             to={`/learn/${course.id}`}
@@ -77,7 +116,15 @@ const Learn = () => {
             {/* Course Header */}
             <div className="h-28 bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 flex items-center justify-center relative overflow-hidden">
               <div className="absolute inset-0 opacity-10 bg-pattern"></div>
-              <span className="text-5xl drop-shadow-lg">{course.thumbnail}</span>
+              {course.thumbnail ? (
+                <img
+                  src={toAbsoluteMediaUrl(course.thumbnail)}
+                  alt={course.title}
+                  className="w-full h-full object-cover opacity-95"
+                />
+              ) : (
+                <span className="text-5xl drop-shadow-lg">📚</span>
+              )}
             </div>
 
             {/* Course Content */}
@@ -86,11 +133,13 @@ const Learn = () => {
               <div className="flex items-start justify-between gap-3 mb-2">
                 <h3 className="text-lg font-bold text-dark-500 group-hover:text-primary-600 transition-colors line-clamp-2">{course.title}</h3>
                 <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
-                  {course.difficulty}
+                  {course.difficulty_display || course.difficulty_level}
                 </span>
               </div>
               
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2 font-medium">{course.subtitle}</p>
+              <p className="text-sm text-gray-600 mb-4 line-clamp-2 font-medium">
+                {course.description?.slice(0, 90) || ''}
+              </p>
 
               {/* Course Meta */}
               <div className="space-y-2 text-sm text-gray-500 mb-4 pb-4 border-b border-gray-100">
@@ -100,11 +149,11 @@ const Learn = () => {
                 </p>
                 <p className="flex items-center gap-2">
                   <span>⏱️</span>
-                  <span className="font-medium">{course.duration}</span>
+                  <span className="font-medium">{course.duration_hours} hrs</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <span>👥</span>
-                  <span className="font-medium">{course.students.toLocaleString()} students</span>
+                  <span className="font-medium">{course.enrolled_count} learners</span>
                 </p>
               </div>
 
@@ -114,9 +163,9 @@ const Learn = () => {
                   <span className="text-yellow-400">⭐</span>
                   <span className="font-bold text-dark-500">{course.rating}</span>
                 </div>
-                <button className="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 hover:shadow-md active:scale-95 transition-all duration-200 text-sm">
-                  Start
-                </button>
+                  <span className="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 hover:shadow-md active:scale-95 transition-all duration-200 text-sm">
+                    Start
+                  </span>
               </div>
             </div>
           </Link>
@@ -124,7 +173,7 @@ const Learn = () => {
       </div>
 
       {/* Empty State */}
-      {filteredCourses.length === 0 && (
+      {courses.length === 0 && (
         <div className="text-center py-16">
           <p className="text-xl text-gray-600 font-medium mb-4">No courses found matching your filters.</p>
           <button
