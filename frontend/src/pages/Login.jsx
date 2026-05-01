@@ -13,6 +13,21 @@ const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const formatError = (rawError) => {
+    if (!rawError) return 'Login failed. Please try again.';
+    if (typeof rawError === 'string') return rawError;
+    if (rawError.message) return rawError.message;
+    if (typeof rawError === 'object') {
+      const parts = Object.entries(rawError).map(([field, value]) => {
+        const text = Array.isArray(value) ? value.join(', ') : String(value);
+        if (field === 'non_field_errors') return text;
+        return `${field}: ${text}`;
+      });
+      return parts.filter(Boolean).join(' | ') || 'Login failed. Please try again.';
+    }
+    return 'Login failed. Please try again.';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -25,19 +40,7 @@ const Login = () => {
       const from = searchParams.get('from') || '/learn';
       navigate(from);
     } else {
-      // Better error message extraction
-      let errorMsg = 'Login failed. Please try again.';
-      if (result.error) {
-        if (typeof result.error === 'string') {
-          errorMsg = result.error;
-        } else if (result.error.message) {
-          errorMsg = result.error.message;
-        } else if (typeof result.error === 'object') {
-          const errorValues = Object.values(result.error).flat();
-          errorMsg = errorValues.length > 0 ? errorValues.join(', ') : errorMsg;
-        }
-      }
-      setError(errorMsg);
+      setError(formatError(result.error));
     }
 
     setLoading(false);

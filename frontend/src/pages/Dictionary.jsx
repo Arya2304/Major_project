@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AccessibleButton from '../components/common/AccessibleButton';
+import { signsAPI } from '../api/signs';
+import { useAuth } from '../context/AuthContext';
 import { FaVideo, FaSearch, FaBook, FaCheck } from 'react-icons/fa';
 
 /**
@@ -9,194 +11,69 @@ import { FaVideo, FaSearch, FaBook, FaCheck } from 'react-icons/fa';
  * Browse and search signs by category or keyword
  */
 
-// Mock sign dictionary data with multilingual support and 3 sign languages (ISL, ASL, BSL)
-const MOCK_SIGNS = [
-  {
-    id: 1,
-    english: 'Hello',
-    hindi: 'नमस्ते',
-    marathi: 'नमस्कार',
-    category: 'Greetings',
-    description: 'A friendly greeting, palm outward wave',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Hello+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Hello+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Hello+BSL+Sign',
-    },
-  },
-  {
-    id: 2,
-    english: 'Thank You',
-    hindi: 'धन्यवाद',
-    marathi: 'धन्यवाद',
-    category: 'Common Words',
-    description: 'Express gratitude with a bow and hand gesture',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Thank+You+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Thank+You+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Thank+You+BSL+Sign',
-    },
-  },
-  {
-    id: 3,
-    english: 'Yes',
-    hindi: 'हाँ',
-    marathi: 'हो',
-    category: 'Common Words',
-    description: 'Nodding head motion with hand confirmation',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Yes+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Yes+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Yes+BSL+Sign',
-    },
-  },
-  {
-    id: 4,
-    english: 'No',
-    hindi: 'नहीं',
-    marathi: 'नाही',
-    category: 'Common Words',
-    description: 'Shaking hand motion indicating negation',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=No+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=No+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=No+BSL+Sign',
-    },
-  },
-  {
-    id: 5,
-    english: 'A',
-    hindi: 'ए',
-    marathi: 'ए',
-    category: 'Alphabets',
-    description: 'Hand shape resembling the letter A',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=A+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=A+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=A+BSL+Sign',
-    },
-  },
-  {
-    id: 6,
-    english: 'B',
-    hindi: 'बी',
-    marathi: 'बी',
-    category: 'Alphabets',
-    description: 'Hand shape resembling the letter B',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=B+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=B+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=B+BSL+Sign',
-    },
-  },
-  {
-    id: 7,
-    english: 'One',
-    hindi: 'एक',
-    marathi: 'एक',
-    category: 'Numbers',
-    description: 'Single finger up representing the number 1',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=One+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=One+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=One+BSL+Sign',
-    },
-  },
-  {
-    id: 8,
-    english: 'Two',
-    hindi: 'दो',
-    marathi: 'दोन',
-    category: 'Numbers',
-    description: 'Two fingers up representing the number 2',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Two+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Two+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Two+BSL+Sign',
-    },
-  },
-  {
-    id: 9,
-    english: 'Please',
-    hindi: 'कृपया',
-    marathi: 'कृपया',
-    category: 'Phrases',
-    description: 'Polite request with circular chest motion',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Please+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Please+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Please+BSL+Sign',
-    },
-  },
-  {
-    id: 10,
-    english: 'Sorry',
-    hindi: 'माफी',
-    marathi: 'क्षमा करा',
-    category: 'Phrases',
-    description: 'Apology with hand over heart gesture',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Sorry+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Sorry+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Sorry+BSL+Sign',
-    },
-  },
-  {
-    id: 11,
-    english: 'Good Morning',
-    hindi: 'शुभ प्रभात',
-    marathi: 'सकाळ मंगल',
-    category: 'Greetings',
-    description: 'Combine "good" and "morning" signs',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Good+Morning+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Good+Morning+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Good+Morning+BSL+Sign',
-    },
-  },
-  {
-    id: 12,
-    english: 'Good Night',
-    hindi: 'शुभ रात्रि',
-    marathi: 'रात्री मंगल',
-    category: 'Greetings',
-    description: 'Combine "good" and "night" signs',
-    signs: {
-      ISL: 'https://via.placeholder.com/400x300?text=Good+Night+ISL+Sign',
-      ASL: 'https://via.placeholder.com/400x300?text=Good+Night+ASL+Sign',
-      BSL: 'https://via.placeholder.com/400x300?text=Good+Night+BSL+Sign',
-    },
-  },
-];
-
-const CATEGORIES = ['All', 'Alphabets', 'Numbers', 'Common Words', 'Phrases', 'Greetings'];
-const SIGN_LANGUAGES = ['ISL', 'ASL', 'BSL'];
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
 
 const Dictionary = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSignLanguage, setSelectedSignLanguage] = useState('ISL');
+  const [signs, setSigns] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [languages, setLanguages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDictionaryData = async () => {
+      setLoading(true);
+      try {
+        const [signsData, categoriesData, languagesData] = await Promise.all([
+          signsAPI.getSigns({}),
+          signsAPI.getCategories(),
+          signsAPI.getLanguages(),
+        ]);
+        setSigns(signsData?.results || signsData || []);
+        setCategories(categoriesData?.results || categoriesData || []);
+        setLanguages(languagesData || []);
+      } catch (error) {
+        console.error('[Dictionary] Failed to load dictionary:', error);
+        setSigns([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDictionaryData();
+  }, []);
 
   // Filter and search signs across all 3 languages
   const filteredSigns = useMemo(() => {
-    return MOCK_SIGNS.filter((sign) => {
-      const matchesCategory = selectedCategory === 'All' || sign.category === selectedCategory;
+    return signs.filter((sign) => {
+      const categoryName = sign?.category?.name || '';
+      const matchesCategory = selectedCategory === 'All' || categoryName === selectedCategory;
+      const matchesLanguage = !selectedSignLanguage || sign.language === selectedSignLanguage;
       const searchLower = searchQuery.toLowerCase();
-      
-      // Search across English, Hindi, and Marathi
-      const matchesSearch = 
-        sign.english.toLowerCase().includes(searchLower) ||
-        sign.hindi.toLowerCase().includes(searchLower) ||
-        sign.marathi.toLowerCase().includes(searchLower) ||
-        sign.description.toLowerCase().includes(searchLower);
-      
-      return matchesCategory && matchesSearch;
+      const matchesSearch =
+        (sign.word || '').toLowerCase().includes(searchLower) ||
+        categoryName.toLowerCase().includes(searchLower) ||
+        (sign.description || '').toLowerCase().includes(searchLower);
+
+      return matchesCategory && matchesLanguage && matchesSearch;
     });
-  }, [searchQuery, selectedCategory, selectedSignLanguage]);
+  }, [searchQuery, selectedCategory, selectedSignLanguage, signs]);
 
   const handleLearnSign = (sign) => {
-    navigate(`/sign-learning/${sign.id}`, { state: { sign } });
+    if (!isAuthenticated) {
+      navigate(`/login?from=${encodeURIComponent(`/signs/${sign.id}`)}`);
+      return;
+    }
+    navigate(`/signs/${sign.id}`);
   };
 
   return (
@@ -217,19 +94,19 @@ const Dictionary = () => {
         <div className="mb-8">
           <p className="text-sm font-bold text-gray-700 mb-3">Select Sign Language</p>
           <div className="flex flex-wrap gap-3">
-            {SIGN_LANGUAGES.map((language) => (
+            {(languages || []).map((language) => (
               <button
-                key={language}
-                onClick={() => setSelectedSignLanguage(language)}
+                key={language.code}
+                onClick={() => setSelectedSignLanguage(language.code)}
                 className={`px-4 py-2 rounded-full font-semibold transition-all ${
-                  selectedSignLanguage === language
+                  selectedSignLanguage === language.code
                     ? 'bg-primary-600 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
-                aria-pressed={selectedSignLanguage === language}
-                aria-label={`View ${language} signs`}
+                aria-pressed={selectedSignLanguage === language.code}
+                aria-label={`View ${language.name} signs`}
               >
-                {language}
+                {language.code}
               </button>
             ))}
           </div>
@@ -243,11 +120,11 @@ const Dictionary = () => {
           <input
             id="search-signs"
             type="text"
-            placeholder="Search by English, Hindi, or Marathi... (e.g., 'hello', 'नमस्ते', 'नमस्कार')"
+            placeholder="Search by word, category, or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-            aria-label="Search signs dictionary in English, Hindi, or Marathi"
+            aria-label="Search signs dictionary"
           />
         </div>
 
@@ -255,7 +132,7 @@ const Dictionary = () => {
         <div className="mb-8">
           <p className="text-sm font-bold text-gray-700 mb-3">Filter by Category</p>
           <div className="flex flex-wrap gap-3">
-            {CATEGORIES.map((category) => (
+            {['All', ...categories.map((c) => c.name)].map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -281,6 +158,9 @@ const Dictionary = () => {
             {searchQuery && ` matching "${searchQuery}"`}
           </p>
         </div>
+        {loading && (
+          <div className="mb-8 text-gray-700 font-semibold">Loading signs...</div>
+        )}
 
         {/* Sign Cards Grid */}
         {filteredSigns.length > 0 ? (
@@ -290,37 +170,40 @@ const Dictionary = () => {
                 key={sign.id}
                 className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-300"
               >
-                {/* Video Placeholder with Sign Language Label */}
                 <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
                   {/* Sign Language Badge */}
                   <div className="absolute top-2 right-2 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                     {selectedSignLanguage}
                   </div>
-                  <div className="text-center">
-                    <FaVideo className="text-5xl mb-2 mx-auto" />
-                    <p className="text-sm text-gray-600">Video Demo ({selectedSignLanguage})</p>
-                  </div>
+                  {sign.image ? (
+                    <img src={toAbsoluteMediaUrl(sign.image)} alt={sign.word} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <FaVideo className="text-5xl mb-2 mx-auto" />
+                      <p className="text-sm text-gray-600">Sign Preview</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
                   {/* Title - Multilingual */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{sign.english}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">{sign.word}</h3>
                   
                   {/* Hindi and Marathi Translations */}
                   <div className="mb-3 space-y-1">
                     <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Hindi:</span> {sign.hindi}
+                      <span className="font-semibold">Language:</span> {sign.language_display || sign.language}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Marathi:</span> {sign.marathi}
+                      <span className="font-semibold">Difficulty:</span> {sign.difficulty_display || sign.difficulty_level}
                     </p>
                   </div>
 
                   {/* Category Badge */}
                   <div className="mb-3">
                     <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-bold">
-                      {sign.category}
+                      {sign?.category?.name || 'General'}
                     </span>
                   </div>
 
@@ -335,7 +218,7 @@ const Dictionary = () => {
                     onClick={() => handleLearnSign(sign)}
                     className="w-full"
                   >
-                    Learn This Sign ({selectedSignLanguage}) →
+                    Learn This Sign →
                   </AccessibleButton>
                 </div>
               </div>

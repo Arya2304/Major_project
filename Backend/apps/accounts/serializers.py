@@ -76,6 +76,8 @@ class LoginSerializer(serializers.Serializer):
         password = attrs.get('password')
         
         if email and password:
+            if not CustomUser.objects.filter(email=email).exists():
+                raise serializers.ValidationError('User not registered. Please register first.')
             user = authenticate(request=self.context.get('request'),
                               username=email, password=password)
             if not user:

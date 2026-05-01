@@ -252,7 +252,7 @@ export const getPracticeStats = async () => {
  */
 export const API_CONFIG = {
   // Backend URL - will be used when replacing mock API (Vite uses import.meta.env instead of process.env)
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8001',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   
   // Endpoints - document future real API structure
   ENDPOINTS: {

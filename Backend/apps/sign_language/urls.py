@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # Languages
     path('languages/', views.languages_view, name='languages'),
+    path('gesture/detect/', views.detect_gesture_view, name='gesture-detect'),
     
     # Categories
     path('categories/', views.CategoryListCreateView.as_view(), name='category-list-create'),

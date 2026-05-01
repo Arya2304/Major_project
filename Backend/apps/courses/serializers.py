@@ -1,7 +1,7 @@
 import json
 from rest_framework import serializers
 from .models import Course, Lesson, Enrollment
-from apps.sign_language.serializers import SignSerializer
+from ..sign_language.serializers import SignSerializer
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -17,7 +17,6 @@ class LessonSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # Handle sign_ids if provided
         if 'sign_ids' in data:
-            from apps.sign_language.models import Sign
             # `sign_ids` may come as:
             # - list of values (e.g. JSON)
             # - a single string (e.g. "1" or "[1,2]" or "1,2")
@@ -58,7 +57,7 @@ class LessonSerializer(serializers.ModelSerializer):
         sign_ids = validated_data.pop('sign_ids', [])
         lesson = Lesson.objects.create(**validated_data)
         if sign_ids:
-            from apps.sign_language.models import Sign
+            from ..sign_language.models import Sign
             lesson.signs.set(Sign.objects.filter(id__in=sign_ids))
         return lesson
     
@@ -68,13 +67,14 @@ class LessonSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         if sign_ids is not None:
-            from apps.sign_language.models import Sign
+            from ..sign_language.models import Sign
             instance.signs.set(Sign.objects.filter(id__in=sign_ids))
         return instance
 
 
 class CourseSerializer(serializers.ModelSerializer):
     instructor = serializers.StringRelatedField(read_only=True)
+    instructor_name = serializers.SerializerMethodField()
     lessons_count = serializers.SerializerMethodField()
     language_display = serializers.CharField(source='get_language_display', read_only=True)
     difficulty_display = serializers.CharField(source='get_difficulty_level_display', read_only=True)
@@ -83,7 +83,7 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'title', 'description', 'language', 'language_display',
-                  'difficulty_level', 'difficulty_display', 'thumbnail', 'instructor',
+                  'difficulty_level', 'difficulty_display', 'thumbnail', 'instructor', 'instructor_name',
                   'is_published', 'is_featured', 'price', 'duration_hours',
                   'enrolled_count', 'rating', 'lessons_count', 'is_enrolled',
                   'created_at', 'updated_at']
@@ -91,6 +91,12 @@ class CourseSerializer(serializers.ModelSerializer):
     
     def get_lessons_count(self, obj):
         return obj.lessons.count()
+
+    def get_instructor_name(self, obj):
+        if not obj.instructor:
+            return None
+        full_name = f"{obj.instructor.first_name} {obj.instructor.last_name}".strip()
+        return full_name or obj.instructor.username or obj.instructor.email
     
     def get_is_enrolled(self, obj):
         request = self.context.get('request')

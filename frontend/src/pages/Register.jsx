@@ -22,6 +22,21 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const formatError = (rawError) => {
+    if (!rawError) return 'Registration failed. Please try again.';
+    if (typeof rawError === 'string') return rawError;
+    if (rawError.message) return rawError.message;
+    if (typeof rawError === 'object') {
+      const parts = Object.entries(rawError).map(([field, value]) => {
+        const text = Array.isArray(value) ? value.join(', ') : String(value);
+        if (field === 'non_field_errors') return text;
+        return `${field}: ${text}`;
+      });
+      return parts.filter(Boolean).join(' | ') || 'Registration failed. Please try again.';
+    }
+    return 'Registration failed. Please try again.';
+  };
+
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -66,19 +81,7 @@ const Register = () => {
     if (result.success) {
       navigate('/learn');
     } else {
-      // Better error message extraction
-      let errorMsg = 'Registration failed. Please try again.';
-      if (result.error) {
-        if (typeof result.error === 'string') {
-          errorMsg = result.error;
-        } else if (result.error.message) {
-          errorMsg = result.error.message;
-        } else if (typeof result.error === 'object') {
-          const errorValues = Object.values(result.error).flat();
-          errorMsg = errorValues.length > 0 ? errorValues.join(', ') : errorMsg;
-        }
-      }
-      setError(errorMsg);
+      setError(formatError(result.error));
     }
 
     setLoading(false);

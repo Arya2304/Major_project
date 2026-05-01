@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, filters, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Q, Avg, Count
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Course, Lesson, Enrollment
 from .serializers import (
     CourseSerializer,
@@ -21,6 +21,7 @@ class CourseListCreateView(generics.ListCreateAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'rating', 'enrolled_count', 'price']
     ordering = ['-created_at']
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -49,6 +50,7 @@ class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.select_related('instructor').prefetch_related('lessons')
     serializer_class = CourseDetailSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -65,6 +67,7 @@ class LessonListCreateView(generics.ListCreateAPIView):
     search_fields = ['title', 'description', 'course__title']
     ordering_fields = ['order', 'created_at']
     ordering = ['order']
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
     
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -81,6 +84,7 @@ class LessonDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lesson.objects.select_related('course').prefetch_related('signs')
     serializer_class = LessonSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
 
 class EnrollmentListCreateView(generics.ListCreateAPIView):

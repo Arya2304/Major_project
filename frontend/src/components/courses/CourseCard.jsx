@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FaBook, FaStar, FaCheck, FaUsers } from 'react-icons/fa';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const toAbsoluteMediaUrl = (url) => {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://')) return url;

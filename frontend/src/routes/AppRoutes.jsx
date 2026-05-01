@@ -65,8 +65,10 @@ const AppRoutes = () => {
         <Route path="/" element={isAuthenticated ? <Navigate to="/learn" /> : <Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/signs" element={<SignLearning />} />
-        <Route path="/signs/:id" element={<SignDetail />} />
+        <Route path="/signs" element={<Dictionary />} />
+        <Route path="/signs/:id" element={<SignLearning />} />
+        <Route path="/signs/:id/media" element={<SignDetail />} />
+        <Route path="/sign-learning/:signId" element={<SignLearning />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
       </Route>

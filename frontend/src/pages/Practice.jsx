@@ -4,6 +4,8 @@ import AccessibleButton from '../components/common/AccessibleButton';
 import { FaHandPeace, FaGraduationCap, FaRedo, FaUser, FaFrownOpen, FaCamera, FaHourglass, FaPlay, FaStop, FaChartBar, FaLightbulb, FaCircle, FaGlobe, FaBluetooth } from 'react-icons/fa';
 import './Practice.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 /**
  * Practice.jsx — Phase 5
  * Main practice page with side-by-side instructor video and camera mirror
@@ -14,7 +16,9 @@ const Practice = () => {
   // Video refs and state
   const videoRef = useRef(null);
   const cameraRef = useRef(null);
+  const captureCanvasRef = useRef(null);
   const streamRef = useRef(null);
+  const lastDetectedRef = useRef(null);
 
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
@@ -22,6 +26,9 @@ const Practice = () => {
 
   // IoT Gesture state
   const [detectedSign, setDetectedSign] = useState(null);
+  const [lastDetectedSign, setLastDetectedSign] = useState(null);
+  const [lastGestureAt, setLastGestureAt] = useState(null);
+  const [gestureConfidence, setGestureConfidence] = useState(null);
   const [gloveConnected, setGloveConnected] = useState(false);
   const [gloveLoading, setGloveLoading] = useState(true);
 
@@ -174,30 +181,68 @@ const Practice = () => {
   }, []);
 
   /**
-   * Poll gesture data from Django backend every 1 second
-   * POST to /api/sign-language/gesture/latest/
+   * Send camera frames to backend gesture detector.
    */
   useEffect(() => {
-    let pollInterval;
+    if (!cameraActive || !cameraRef.current) return undefined;
 
-    const fetchLatestGesture = async () => {
+    let detectInterval;
+    const detectFromFrame = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/sign-language/gesture/latest/', {
-          method: 'GET',
+        const video = cameraRef.current;
+        if (!video || video.readyState < 2) return;
+
+        if (!captureCanvasRef.current) {
+          captureCanvasRef.current = document.createElement('canvas');
+        }
+        const canvas = captureCanvasRef.current;
+        const width = 320;
+        const height = 240;
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(video, 0, 0, width, height);
+
+        const image = canvas.toDataURL('image/jpeg', 0.7);
+
+        const response = await fetch(`${API_BASE_URL}/api/sign-language/gesture/detect/`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ image }),
         });
 
         if (response.ok) {
           const data = await response.json();
 
-          if (data.gesture) {
-            setDetectedSign(data.gesture);
+          const detected = data?.gesture || data?.prediction || data?.label || null;
+          const confidence =
+            typeof data?.confidence === 'number'
+              ? Math.round(data.confidence * 100)
+              : typeof data?.score === 'number'
+                ? Math.round(data.score * 100)
+                : null;
+
+          if (detected) {
+            setDetectedSign(detected);
+            setGestureConfidence(confidence);
             setGloveConnected(true);
+            setLastGestureAt(new Date().toLocaleTimeString());
+
+            if (detected !== lastDetectedRef.current) {
+              lastDetectedRef.current = detected;
+              setLastDetectedSign(detected);
+              setSignsPracticed((prev) => prev + 1);
+            }
+            if (confidence != null) {
+              setAccuracy(confidence);
+            }
           } else {
             // No gesture detected yet
             setDetectedSign(null);
+            setGestureConfidence(null);
             setGloveConnected(true);
           }
 
@@ -213,14 +258,13 @@ const Practice = () => {
       }
     };
 
-    // Initial fetch
-    fetchLatestGesture();
+    detectFromFrame();
+    detectInterval = setInterval(detectFromFrame, 1200);
 
-    // Poll every 1 second
-    pollInterval = setInterval(fetchLatestGesture, 1000);
-
-    return () => clearInterval(pollInterval);
-  }, []);
+    return () => {
+      if (detectInterval) clearInterval(detectInterval);
+    };
+  }, [cameraActive]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -264,6 +308,15 @@ const Practice = () => {
                   </div>
                   <p className="text-xs text-gray-600">Bluetooth Gloves Status</p>
                 </div>
+                <div className="text-center">
+                  <div className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-2">Detected Gesture</div>
+                  <div className="text-3xl font-black text-primary-600">
+                    {detectedSign || '--'}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-2">
+                    {gestureConfidence != null ? `Confidence: ${gestureConfidence}%` : 'Confidence: N/A'}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -281,6 +334,12 @@ const Practice = () => {
                     ? 'One Glove Connected. Waiting for the other...'
                     : 'Waiting for glove connection'}
               </div>
+              {gloveConnected && (
+                <div className="mt-3 p-4 bg-primary-50 border border-primary-200 rounded-lg text-sm text-primary-800">
+                  Latest gesture: <span className="font-bold">{detectedSign || 'No gesture yet'}</span>
+                  {lastGestureAt ? ` at ${lastGestureAt}` : ''}
+                </div>
+              )}
 
               {/* Bluetooth Error Message */}
               {bluetoothError && (
@@ -363,14 +422,19 @@ const Practice = () => {
                 </div>
               ) : cameraActive ? (
                 /* Camera Stream */
-                <video
-                  ref={cameraRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                  aria-label="Your camera feed"
-                />
+                <div className="relative w-full h-full">
+                  <video
+                    ref={cameraRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    aria-label="Your camera feed"
+                  />
+                  <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-black/70 text-white text-xs font-bold">
+                    Gesture: {detectedSign || 'Detecting...'}
+                  </div>
+                </div>
               ) : (
                 /* Camera Placeholder */
                 <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">

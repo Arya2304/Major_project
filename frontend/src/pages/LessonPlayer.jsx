@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import {
-  getLesson,
-  getCourseById,
-  getNextLesson,
-  getPreviousLesson,
-} from '../data/mockData';
-import { markLessonComplete } from '../utils/progressUtils';
+import { coursesAPI } from '../api/courses';
+import { progressAPI } from '../api/progress';
 import AccessibleButton from '../components/common/AccessibleButton';
 import { FaVideo, FaBook, FaChevronRight, FaChevronLeft, FaCheck } from 'react-icons/fa';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
 
 const LessonPlayer = () => {
   const { lessonId } = useParams();
@@ -31,7 +33,7 @@ const LessonPlayer = () => {
       setError(null);
       try {
         const parsedLessonId = parseInt(lessonId);
-        const lessonData = getLesson(parsedLessonId);
+        const lessonData = await coursesAPI.getLesson(parsedLessonId);
 
         if (!lessonData) {
           setError(`Lesson #${parsedLessonId} not found. Please select a valid lesson.`);
@@ -40,7 +42,8 @@ const LessonPlayer = () => {
         }
 
         // Get course data
-        const courseData = getCourseById(lessonData.courseId);
+        const courseId = lessonData?.course?.id ?? lessonData?.course;
+        const courseData = await coursesAPI.getCourse(courseId);
         if (!courseData) {
           setError('Course not found');
           setLoading(false);
@@ -48,8 +51,13 @@ const LessonPlayer = () => {
         }
 
         // Get navigation data
-        const nextLessonData = getNextLesson(parsedLessonId);
-        const previousLessonData = getPreviousLesson(parsedLessonId);
+        const courseLessonsData = await coursesAPI.getCourseLessons(courseId);
+        const courseLessons = (courseLessonsData?.results || courseLessonsData || []).sort(
+          (a, b) => (a.order || 0) - (b.order || 0)
+        );
+        const currentIndex = courseLessons.findIndex((item) => item.id === parsedLessonId);
+        const previousLessonData = currentIndex > 0 ? courseLessons[currentIndex - 1] : null;
+        const nextLessonData = currentIndex >= 0 && currentIndex < courseLessons.length - 1 ? courseLessons[currentIndex + 1] : null;
 
         setLesson(lessonData);
         setCourse(courseData);
@@ -67,18 +75,29 @@ const LessonPlayer = () => {
   }, [lessonId]);
 
   const handleContinueLesson = () => {
-    // Mark current lesson as completed
-    if (lesson && course) {
-      markLessonComplete(course.id, lesson.id);
-    }
+    const completeAndNavigate = async () => {
+      if (lesson) {
+        try {
+          await progressAPI.updateLessonProgress(lesson.id, { is_completed: true, completion_percentage: 100 });
+        } catch (error) {
+          try {
+            await progressAPI.createLessonProgress(lesson.id, { is_completed: true, completion_percentage: 100 });
+          } catch (innerError) {
+            console.warn('[LessonPlayer] Could not persist completion:', innerError);
+          }
+        }
+      }
 
-    if (nextLesson) {
-      setIsCompleted(true);
-      navigate(`/lesson/${nextLesson.id}`);
-    } else {
-      setIsCompleted(true);
-      navigate(`/learn`);
-    }
+      if (nextLesson) {
+        setIsCompleted(true);
+        navigate(`/lesson/${nextLesson.id}`);
+      } else {
+        setIsCompleted(true);
+        navigate(`/learn`);
+      }
+    };
+
+    completeAndNavigate();
   };
 
   const handlePreviousLesson = () => {
@@ -145,11 +164,20 @@ const LessonPlayer = () => {
       <div className="page-container max-w-5xl mb-12">
         {/* Video Section */}
         <div className="bg-gray-100 rounded-lg overflow-hidden mb-6 aspect-video flex items-center justify-center">
-          <div className="text-center">
-            <FaVideo className="text-6xl text-gray-400 mb-3 mx-auto" />
-            <p className="text-gray-600 font-semibold">{lesson.title}</p>
-            <p className="text-gray-500 text-sm">{lesson.duration}</p>
-          </div>
+          {lesson.video ? (
+            <video
+              src={toAbsoluteMediaUrl(lesson.video)}
+              controls
+              className="w-full h-full object-contain bg-black"
+              preload="metadata"
+            />
+          ) : (
+            <div className="text-center">
+              <FaVideo className="text-6xl text-gray-400 mb-3 mx-auto" />
+              <p className="text-gray-600 font-semibold">{lesson.title}</p>
+              <p className="text-gray-500 text-sm">{lesson.duration ? `${lesson.duration}s` : 'Video unavailable'}</p>
+            </div>
+          )}
         </div>
 
         {/* Lesson Info */}
@@ -159,11 +187,11 @@ const LessonPlayer = () => {
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-gray-600">Duration:</span>
-              <span className="text-primary-600 font-bold">{lesson.duration}</span>
+              <span className="text-primary-600 font-bold">{lesson.duration ? `${lesson.duration}s` : 'N/A'}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-gray-600">Level:</span>
-              <span className="text-accent-600 font-bold">{lesson.difficulty}</span>
+              <span className="text-accent-600 font-bold">{course.difficulty_display || course.difficulty_level || 'N/A'}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-gray-600">Course:</span>

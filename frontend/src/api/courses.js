@@ -67,9 +67,11 @@ export const coursesAPI = {
     return response.data;
   },
 
-  updateCourseThumbnail: async (courseId, thumbnailFile) => {
-    const fd = new FormData();
-    fd.append('thumbnail', thumbnailFile);
+  updateCourseThumbnail: async (courseId, payload) => {
+    const fd = payload instanceof FormData ? payload : new FormData();
+    if (!(payload instanceof FormData) && payload) {
+      fd.append('thumbnail', payload);
+    }
 
     const response = await api.patch(`/courses/${courseId}/`, fd, {
       headers: { 'Content-Type': 'multipart/form-data' },

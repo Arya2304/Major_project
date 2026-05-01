@@ -1,7 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AccessibleButton from '../components/common/AccessibleButton';
-import { mockCourses, getCourseLessons } from '../data/mockData';
+import { coursesAPI } from '../api/courses';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
 
 /**
  * Courses.jsx — Phase 3
@@ -11,10 +18,29 @@ import { mockCourses, getCourseLessons } from '../data/mockData';
  * NOTE: Wrapped by PublicLayout in AppRoutes, so no layout wrapper needed
  */
 const Courses = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(''); // '' = All
   const [selectedDifficulty, setSelectedDifficulty] = useState(''); // '' = All
   const [sortBy, setSortBy] = useState('popular'); // 'popular', 'newest', 'rating'
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      setLoading(true);
+      try {
+        const data = await coursesAPI.getCourses({ published: 'true' });
+        setCourses(data?.results || data || []);
+      } catch (error) {
+        console.error('[Courses] Failed to load courses:', error);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourses();
+  }, []);
 
   // Language filter options
   const languages = [
@@ -34,12 +60,13 @@ const Courses = () => {
 
   // Filter and sort courses
   const filteredCourses = useMemo(() => {
-    let result = mockCourses.filter((course) => {
+    let result = courses.filter((course) => {
       const matchesSearch =
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.subtitle.toLowerCase().includes(searchTerm.toLowerCase());
+        (course.description || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesLanguage = !selectedLanguage || course.language === selectedLanguage;
-      const matchesDifficulty = !selectedDifficulty || course.difficulty === selectedDifficulty;
+      const matchesDifficulty =
+        !selectedDifficulty || (course.difficulty_display || '').toLowerCase() === selectedDifficulty.toLowerCase();
       return matchesSearch && matchesLanguage && matchesDifficulty;
     });
 
@@ -50,7 +77,7 @@ const Courses = () => {
       result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else {
       // popular (by students)
-      result.sort((a, b) => (b.students || 0) - (a.students || 0));
+      result.sort((a, b) => (b.enrolled_count || 0) - (a.enrolled_count || 0));
     }
 
     return result;
@@ -63,7 +90,7 @@ const Courses = () => {
         <div className="page-container">
           <h1 className="text-5xl md:text-6xl font-display font-bold mb-4">📚 All Courses</h1>
           <p className="text-lg md:text-xl text-white/90 max-w-2xl">
-            Choose from {mockCourses.length} comprehensive courses in ISL, ASL, and BSL. Learn at your own pace.
+            Choose from {courses.length} comprehensive courses in ISL, ASL, and BSL. Learn at your own pace.
           </p>
         </div>
       </section>
@@ -159,6 +186,11 @@ const Courses = () => {
       {/* ========== COURSES GRID ========== */}
       <section className="bg-gray-50 section-gap">
         <div className="page-container">
+          {loading && (
+            <div className="bg-white rounded-2xl p-12 text-center card mb-8">
+              <p className="text-gray-700 font-semibold">Loading courses...</p>
+            </div>
+          )}
           {filteredCourses.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredCourses.map((course) => (
@@ -169,7 +201,15 @@ const Courses = () => {
                 >
                   {/* Course Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-6xl relative overflow-hidden">
-                    {course.thumbnail || '📚'}
+                    {course.thumbnail ? (
+                      <img
+                        src={toAbsoluteMediaUrl(course.thumbnail)}
+                        alt={course.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      '📚'
+                    )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                   </div>
 
@@ -180,9 +220,9 @@ const Courses = () => {
                       <span className={`lang-badge-${course.language.toLowerCase()}`}>
                         {course.language}
                       </span>
-                      {course.difficulty && (
+                      {(course.difficulty_display || course.difficulty_level) && (
                         <span className="text-xs font-bold text-accent-600 bg-accent-100 px-2 py-1 rounded-full">
-                          {course.difficulty}
+                          {course.difficulty_display || course.difficulty_level}
                         </span>
                       )}
                     </div>
@@ -191,16 +231,16 @@ const Courses = () => {
                     <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
                       {course.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4 flex-1">{course.subtitle}</p>
+                    <p className="text-sm text-gray-600 mb-4 flex-1 line-clamp-2">{course.description}</p>
 
                     {/* Course Meta */}
                     <div className="grid grid-cols-3 gap-4 text-center text-sm border-t border-gray-200 pt-4">
                       <div>
-                        <p className="font-bold text-gray-900">{getCourseLessons(course.id).length || 0}</p>
+                        <p className="font-bold text-gray-900">{course.lessons_count || 0}</p>
                         <p className="text-xs text-gray-500">Lessons</p>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">{course.duration || '0'} hrs</p>
+                        <p className="font-bold text-gray-900">{course.duration_hours || '0'} hrs</p>
                         <p className="text-xs text-gray-500">Duration</p>
                       </div>
                       <div>
@@ -211,7 +251,7 @@ const Courses = () => {
 
                     {/* Students Count */}
                     <p className="text-xs text-gray-500 mt-4 text-center">
-                      👥 {course.students || 0} students
+                      👥 {course.enrolled_count || 0} students
                     </p>
                   </div>
 

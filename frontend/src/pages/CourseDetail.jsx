@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { coursesAPI } from '../api/courses';
 import { progressAPI } from '../api/progress';
-import { getCourseById, getCourseLessons } from '../data/mockData';
+import { signsAPI } from '../api/signs';
 import Loader from '../components/common/Loader';
 import { FaStar } from 'react-icons/fa';
 import './CourseDetail.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const toAbsoluteMediaUrl = (url) => {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -43,6 +43,9 @@ const CourseDetail = () => {
   });
 
   const [courseThumbnailFile, setCourseThumbnailFile] = useState(null);
+  const [courseTitle, setCourseTitle] = useState('');
+  const [courseDescription, setCourseDescription] = useState('');
+  const [courseDurationHours, setCourseDurationHours] = useState('');
   const [updatingCourse, setUpdatingCourse] = useState(false);
   const [courseUpdateError, setCourseUpdateError] = useState('');
 
@@ -86,16 +89,12 @@ const CourseDetail = () => {
           return;
         }
 
-        // Always use mock data for both dashboard and public pages (Phase 1-5 development)
-        console.log('[CourseDetail] Loading course from mock data:', paramId);
-        const mockCourse = getCourseById(parseInt(paramId));
-        if (mockCourse) {
-          setCourse(mockCourse);
-          setLessons(getCourseLessons(mockCourse.id) || []);
-          console.log('[CourseDetail] Course loaded from mock data:', mockCourse.title);
-        } else {
-          console.error('[CourseDetail] Course not found in mock data:', paramId);
-        }
+        const courseData = await coursesAPI.getCourse(paramId);
+        setCourse(courseData);
+        setLessons(courseData?.lessons || []);
+        setCourseTitle(courseData?.title || '');
+        setCourseDescription(courseData?.description || '');
+        setCourseDurationHours(courseData?.duration_hours ?? '');
 
         // Fetch enrollment and progress data for dashboard
         if (isDashboard) {
@@ -191,9 +190,23 @@ const CourseDetail = () => {
 
     setUpdatingCourse(true);
     try {
-      await coursesAPI.updateCourseThumbnail(paramId, courseThumbnailFile);
+      const fd = new FormData();
+      fd.append('title', courseTitle || course?.title || '');
+      fd.append('description', courseDescription || course?.description || '');
+      fd.append('language', course?.language || 'ISL');
+      fd.append('difficulty_level', String(course?.difficulty_level || 1));
+      fd.append('duration_hours', String(courseDurationHours !== '' ? courseDurationHours : course?.duration_hours || 0));
+      fd.append('is_published', String(Boolean(course?.is_published)));
+      fd.append('is_featured', String(Boolean(course?.is_featured)));
+      fd.append('price', String(course?.price || 0));
+      fd.append('thumbnail', courseThumbnailFile);
+
+      await coursesAPI.updateCourseThumbnail(paramId, fd);
       const courseData = await coursesAPI.getCourse(paramId);
       setCourse(courseData);
+      setCourseTitle(courseData?.title || '');
+      setCourseDescription(courseData?.description || '');
+      setCourseDurationHours(courseData?.duration_hours ?? '');
       setCourseThumbnailFile(null);
     } catch (error) {
       console.error('[CourseDetail] Update course thumbnail failed:', error);
@@ -391,8 +404,13 @@ const CourseDetail = () => {
                             {lesson.title}
                           </p>
                           <p className={`text-sm ${status === 'locked' ? 'text-gray-400' : 'text-gray-600'}`}>
-                            ⏱️ {lesson.duration}
+                            ⏱️ {lesson.duration ? `${lesson.duration}s` : 'N/A'}
                           </p>
+                          {lesson.description && (
+                            <p className={`text-xs mt-1 line-clamp-2 ${status === 'locked' ? 'text-gray-400' : 'text-gray-500'}`}>
+                              {lesson.description}
+                            </p>
+                          )}
                           {status === 'locked' && (
                             <p className="text-xs text-gray-500 mt-1">Complete previous lesson to unlock</p>
                           )}
@@ -416,7 +434,22 @@ const CourseDetail = () => {
                           )}
                         </>
                       ) : (
-                        <span className="text-gray-600">Lesson {idx + 1}</span>
+                        <div className="flex items-center gap-3">
+                          {lesson.thumbnail ? (
+                            <img
+                              src={toAbsoluteMediaUrl(lesson.thumbnail)}
+                              alt={lesson.title}
+                              className="w-14 h-10 rounded object-cover border border-gray-200"
+                            />
+                          ) : (
+                            <span className="text-gray-600 text-sm">Lesson {idx + 1}</span>
+                          )}
+                          {lesson.is_free && (
+                            <span className="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">
+                              Free
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   );
@@ -439,11 +472,38 @@ const CourseDetail = () => {
                   <div className="text-6xl mb-4">📚</div>
                 )}
                 <h3 className="text-lg font-bold text-dark-500 mb-2">{course.title}</h3>
-                <p className="text-sm text-gray-600">Instructor: {course.instructor}</p>
+                <p className="text-sm text-gray-600">Instructor: {course.instructor_name || course.instructor || 'Instructor'}</p>
               </div>
 
               {isDashboard && (
                 <div className="mb-6">
+                  <h4 className="text-sm font-bold text-dark-500 mb-2">Course Details</h4>
+                  <input
+                    type="text"
+                    value={courseTitle}
+                    onChange={(e) => setCourseTitle(e.target.value)}
+                    className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="Course title"
+                    disabled={updatingCourse}
+                  />
+                  <textarea
+                    value={courseDescription}
+                    onChange={(e) => setCourseDescription(e.target.value)}
+                    className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="Course description"
+                    rows={3}
+                    disabled={updatingCourse}
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={courseDurationHours}
+                    onChange={(e) => setCourseDurationHours(e.target.value)}
+                    className="w-full mb-3 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="Duration (hours)"
+                    disabled={updatingCourse}
+                  />
                   <h4 className="text-sm font-bold text-dark-500 mb-2">Course Image</h4>
                   <input
                     type="file"
@@ -458,10 +518,10 @@ const CourseDetail = () => {
                   <button
                     type="button"
                     onClick={handleUpdateCourseThumbnail}
-                    disabled={updatingCourse || !courseThumbnailFile}
+                    disabled={updatingCourse || !courseThumbnailFile || !courseTitle.trim() || !courseDescription.trim()}
                     className="w-full mt-3 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg font-bold hover:bg-gray-200 disabled:opacity-60"
                   >
-                    {updatingCourse ? 'Updating...' : 'Update Image'}
+                    {updatingCourse ? 'Updating...' : 'Update Course + Image'}
                   </button>
                 </div>
               )}

@@ -21,6 +21,92 @@ const serializeUserForStorage = (user) => {
   };
 };
 
+const MINIMAL_USER_STORAGE = (user) => {
+  if (!user || typeof user !== 'object') return null;
+  return {
+    id: user.id ?? null,
+    email: user.email ?? null,
+    username: user.username ?? null,
+  };
+};
+
+const safeSetStorage = (storage, key, value) => {
+  try {
+    storage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn(`[AuthContext] Failed to write ${key} to storage:`, error);
+    return false;
+  }
+};
+
+const persistUserSafely = (userObj) => {
+  const serialized = JSON.stringify(userObj);
+  const minimalSerialized = JSON.stringify(MINIMAL_USER_STORAGE(userObj));
+
+  // Best effort cleanup of old user entry first.
+  try {
+    localStorage.removeItem('user');
+  } catch {
+    // ignore
+  }
+
+  // First try full payload in localStorage.
+  if (!safeSetStorage(localStorage, 'user', serialized)) {
+    // If quota is hit, try a much smaller user payload.
+    if (!safeSetStorage(localStorage, 'user', minimalSerialized)) {
+      // Keep session-only persistence if localStorage is full.
+      try {
+        localStorage.removeItem('user');
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  // sessionStorage is usually less constrained and tab-scoped fallback.
+  if (!safeSetStorage(sessionStorage, 'user', serialized)) {
+    safeSetStorage(sessionStorage, 'user', minimalSerialized);
+  }
+};
+
+const extractAuthError = (error, mode = 'login') => {
+  const status = error?.response?.status;
+  const payload = error?.response?.data;
+
+  // If backend crashes or returns unknown 5xx, provide actionable fallback text.
+  if (status >= 500) {
+    if (mode === 'login') {
+      return 'User not registered. Please register first.';
+    }
+    return 'Server error during registration. Please try again.';
+  }
+
+  if (typeof payload === 'string' && payload.trim()) return payload;
+
+  if (payload && typeof payload === 'object') {
+    if (typeof payload.detail === 'string' && payload.detail.trim()) return payload.detail;
+    if (typeof payload.message === 'string' && payload.message.trim()) return payload.message;
+
+    const fieldMessages = Object.entries(payload)
+      .filter(([, value]) => value != null)
+      .map(([field, value]) => {
+        const text = Array.isArray(value) ? value.join(', ') : String(value);
+        if (field === 'non_field_errors') return text;
+        return `${field}: ${text}`;
+      })
+      .filter(Boolean);
+
+    if (fieldMessages.length) return fieldMessages.join(' | ');
+  }
+
+  if (status === 400 && mode === 'login') {
+    return 'User not registered. Please register first.';
+  }
+
+  return error?.message || (mode === 'login' ? 'Login failed. Please check your credentials.' : 'Registration failed. Please try again.');
+};
+
 export const AuthProvider = ({ children }) => {
   // Initialize from localStorage
   const getInitialState = () => {
@@ -45,14 +131,14 @@ export const AuthProvider = ({ children }) => {
   const initial = getInitialState();
   const [user, setUser] = useState(initial.user);
   const [token, setToken] = useState(initial.token);
-  const [loading, setLoading] = useState(false); // Start as false since we initialize from localStorage
+  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(!!initial.token);
 
   // Initialize auth from localStorage on app load
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
 
       console.log('[AuthContext] Initializing from localStorage:', { 
         hasToken: !!storedToken, 
@@ -65,6 +151,8 @@ export const AuthProvider = ({ children }) => {
           setToken(storedToken);
           setUser(parsedUser);
           setIsAuthenticated(true);
+          // Keep both storages in sync so refresh/new tab restore works.
+          persistUserSafely(parsedUser);
           console.log('[AuthContext] Auth restored:', { email: parsedUser.email });
         } catch (error) {
           // Data corrupted, clear storage
@@ -76,8 +164,29 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
           setIsAuthenticated(false);
         }
+      } else if (storedToken) {
+        try {
+          // Token exists but user payload is missing; recover user from API.
+          const profile = await authAPI.getProfile();
+          const safeUser = serializeUserForStorage(profile);
+          setToken(storedToken);
+          setUser(safeUser);
+          setIsAuthenticated(true);
+          persistUserSafely(safeUser);
+          console.log('[AuthContext] Auth restored from token/profile');
+        } catch (error) {
+          console.error('[AuthContext] Failed to restore profile from token:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
+          setToken(null);
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } else {
         console.log('[AuthContext] No auth data in localStorage');
+        setToken(null);
+        setUser(null);
         setIsAuthenticated(false);
       }
       
@@ -108,10 +217,11 @@ export const AuthProvider = ({ children }) => {
         // ignore
       }
       localStorage.setItem('token', tokenFromApi);
-      sessionStorage.setItem('user', JSON.stringify(serializeUserForStorage(userFromApi)));
+      const safeUser = serializeUserForStorage(userFromApi);
+      persistUserSafely(safeUser);
 
       setToken(tokenFromApi);
-      setUser(serializeUserForStorage(userFromApi));
+      setUser(safeUser);
       setIsAuthenticated(true);
 
       return { success: true, data: res };
@@ -121,8 +231,7 @@ export const AuthProvider = ({ children }) => {
       if (errorData) {
         console.error('[AuthContext] Login error payload:', errorData);
       }
-      if (errorData) return { success: false, error: errorData };
-      return { success: false, error: error?.message || 'Login failed. Please check your credentials.' };
+      return { success: false, error: extractAuthError(error, 'login') };
     } finally {
       setLoading(false);
     }
@@ -148,10 +257,11 @@ export const AuthProvider = ({ children }) => {
         // ignore
       }
       localStorage.setItem('token', tokenFromApi);
-      sessionStorage.setItem('user', JSON.stringify(serializeUserForStorage(userFromApi)));
+      const safeUser = serializeUserForStorage(userFromApi);
+      persistUserSafely(safeUser);
 
       setToken(tokenFromApi);
-      setUser(serializeUserForStorage(userFromApi));
+      setUser(safeUser);
       setIsAuthenticated(true);
 
       return { success: true, data: res };
@@ -161,8 +271,7 @@ export const AuthProvider = ({ children }) => {
       if (errorData) {
         console.error('[AuthContext] Registration error payload:', errorData);
       }
-      if (errorData) return { success: false, error: errorData };
-      return { success: false, error: error?.message || 'Registration failed. Please try again.' };
+      return { success: false, error: extractAuthError(error, 'register') };
     } finally {
       setLoading(false);
     }
@@ -182,7 +291,7 @@ export const AuthProvider = ({ children }) => {
     console.log('[AuthContext] Updating user:', { email: userData.email });
     const next = serializeUserForStorage(userData);
     setUser(next);
-    sessionStorage.setItem('user', JSON.stringify(next));
+    persistUserSafely(next);
   };
 
   const value = {
