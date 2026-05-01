@@ -360,6 +360,40 @@ const Dictionary = () => {
           </div>
         )}
       </div>
+
+      {/* Info Section */}
+      <div className="bg-gray-50 py-12">
+        <div className="page-container">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Quick Access */}
+            <div className="text-center">
+              <FaBook className="text-4xl mb-3 mx-auto" />
+              <h3 className="font-bold text-gray-900 mb-2">Comprehensive Dictionary</h3>
+              <p className="text-gray-600 text-sm">
+                Browse over 100+ Indian Sign Language signs organized by category
+              </p>
+            </div>
+
+            {/* Video Demos */}
+            <div className="text-center">
+              <FaVideo className="text-4xl mb-3 mx-auto" />
+              <h3 className="font-bold text-gray-900 mb-2">Video Demonstrations</h3>
+              <p className="text-gray-600 text-sm">
+                Learn from native ISL signers with clear hand positions and movements
+              </p>
+            </div>
+
+            {/* Difficulty Progress */}
+            <div className="text-center">
+              <FaCheck className="text-4xl mb-3 mx-auto" />
+              <h3 className="font-bold text-gray-900 mb-2">Track Your Progress</h3>
+              <p className="text-gray-600 text-sm">
+                Mark signs as learned and track your vocabulary growth over time
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
