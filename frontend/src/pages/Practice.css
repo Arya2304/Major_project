@@ -4,6 +4,16 @@
  * Camera frame glow effect, fade-in animations, stat card hover effects
  */
 
+/* Pulse animation for connection indicator */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 /* Camera Frame Styling */
 .camera-frame {
   position: relative;

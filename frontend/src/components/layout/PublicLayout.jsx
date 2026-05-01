@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '../common/Navbar';
 import Footer from '../common/Footer';
-import BottomNavbar from '../common/BottomNavbar';
 
 /**
  * PublicLayout Component — Phase 2
@@ -32,9 +31,6 @@ const PublicLayout = () => {
 
       {/* Bottom Footer */}
       <Footer />
-
-      {/* Mobile Bottom Navigation */}
-      <BottomNavbar />
     </div>
   );
 };

@@ -62,7 +62,7 @@ const Home = () => {
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
-                <p className="mt-4 text-sm font-semibold text-center drop-shadow">Expert Instructor</p>
+                <p className="mt-4 text-sm font-semibold text-center drop-shadow">Video Learning</p>
               </div>
 
               {/* Instructor 2 */}
