@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom';
 import { FaBook, FaStar, FaCheck, FaUsers } from 'react-icons/fa';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const toAbsoluteMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE_URL}${url}`;
+};
+
 const CourseCard = ({ course }) => {
   const getDifficultyColor = (level) => {
     switch (level) {
@@ -27,14 +34,14 @@ const CourseCard = ({ course }) => {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-gray-100 h-full flex flex-col group"
+      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-gray-100 h-full flex flex-col group"
       aria-label={`View course: ${course.title}`}
     >
       {/* Premium Header with Gradient */}
       <div className={`relative w-full h-32 bg-gradient-to-br ${gradientClass} flex items-center justify-center overflow-hidden`}>
         {course.thumbnail ? (
           <img
-            src={course.thumbnail}
+            src={toAbsoluteMediaUrl(course.thumbnail)}
             alt={course.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />

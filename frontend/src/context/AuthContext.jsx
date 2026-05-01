@@ -3,20 +3,41 @@ import { authAPI } from '../api/auth';
 
 const AuthContext = createContext(null);
 
+const serializeUserForStorage = (user) => {
+  if (!user || typeof user !== 'object') return null;
+  // Keep only small fields to avoid exceeding localStorage quota.
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    role: user.role
+      ? {
+          id: user.role.id,
+          name: user.role.name,
+        }
+      : null,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   // Initialize from localStorage
   const getInitialState = () => {
     try {
       const token = localStorage.getItem('token');
-      const user = localStorage.getItem('user');
+      const userFromSession = sessionStorage.getItem('user');
+      const userFromLocal = localStorage.getItem('user');
+      const userRaw = userFromSession || userFromLocal;
       return {
         token: token || null,
-        user: user ? JSON.parse(user) : null,
+        user: userRaw ? JSON.parse(userRaw) : null,
       };
     } catch (error) {
       console.error('Failed to parse stored user:', error);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
       return { token: null, user: null };
     }
   };
@@ -50,6 +71,7 @@ export const AuthProvider = ({ children }) => {
           console.error('[AuthContext] Failed to parse stored data:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
           setToken(null);
           setUser(null);
           setIsAuthenticated(false);
@@ -67,82 +89,82 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('[AuthContext] Login attempt:', { email });
-      
-      // Mock authentication: Accept any email/password combination
-      // In production, this would call authAPI.login(email, password)
-      if (!email || !password) {
-        throw new Error('Email and password are required');
+      if (!email || !password) throw new Error('Email and password are required');
+
+      setLoading(true);
+      const res = await authAPI.login(email, password);
+
+      const tokenFromApi = res?.token;
+      const userFromApi = res?.user;
+      if (!tokenFromApi || !userFromApi) {
+        throw new Error('Invalid login response from server');
       }
 
-      // Create a mock user from email
-      const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        email: email,
-        first_name: email.split('@')[0] || 'User',
-        last_name: 'Learner',
-      };
-      const mockToken = 'token_' + Date.now();
+      // Avoid localStorage quota errors by storing only a small user summary.
+      // Also clear any previously stored oversized `user` value.
+      try {
+        localStorage.removeItem('user');
+      } catch {
+        // ignore
+      }
+      localStorage.setItem('token', tokenFromApi);
+      sessionStorage.setItem('user', JSON.stringify(serializeUserForStorage(userFromApi)));
 
-      // Store in localStorage
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      // Update state
-      setToken(mockToken);
-      setUser(mockUser);
+      setToken(tokenFromApi);
+      setUser(serializeUserForStorage(userFromApi));
       setIsAuthenticated(true);
 
-      console.log('[AuthContext] Login successful:', { email: mockUser.email, isAuthenticated: true });
-
-      return { success: true, data: { token: mockToken, user: mockUser } };
+      return { success: true, data: res };
     } catch (error) {
       console.error('[AuthContext] Login error:', error);
-      return {
-        success: false,
-        error: error.message || 'Login failed. Please check your credentials.',
-      };
+      const errorData = error?.response?.data;
+      if (errorData) {
+        console.error('[AuthContext] Login error payload:', errorData);
+      }
+      if (errorData) return { success: false, error: errorData };
+      return { success: false, error: error?.message || 'Login failed. Please check your credentials.' };
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (userData) => {
     try {
-      console.log('[AuthContext] Register attempt:', { email: userData.email });
-      
-      // Mock registration: Accept any user data
-      // In production, this would call authAPI.register(userData)
-      if (!userData.email || !userData.password) {
-        throw new Error('Email and password are required');
+      if (!userData?.email || !userData?.password) throw new Error('Email and password are required');
+
+      setLoading(true);
+      const res = await authAPI.register(userData);
+
+      const tokenFromApi = res?.token;
+      const userFromApi = res?.user;
+      if (!tokenFromApi || !userFromApi) {
+        throw new Error('Invalid registration response from server');
       }
 
-      // Create a mock user
-      const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        email: userData.email,
-        username: userData.username || userData.email.split('@')[0],
-        first_name: userData.first_name || 'User',
-        last_name: userData.last_name || 'Learner',
-      };
-      const mockToken = 'token_' + Date.now();
+      // Avoid localStorage quota errors by storing only a small user summary.
+      try {
+        localStorage.removeItem('user');
+      } catch {
+        // ignore
+      }
+      localStorage.setItem('token', tokenFromApi);
+      sessionStorage.setItem('user', JSON.stringify(serializeUserForStorage(userFromApi)));
 
-      // Store in localStorage
-      localStorage.setItem('token', mockToken);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-
-      // Update state
-      setToken(mockToken);
-      setUser(mockUser);
+      setToken(tokenFromApi);
+      setUser(serializeUserForStorage(userFromApi));
       setIsAuthenticated(true);
 
-      console.log('[AuthContext] Register successful:', { email: mockUser.email, isAuthenticated: true });
-
-      return { success: true, data: { token: mockToken, user: mockUser } };
+      return { success: true, data: res };
     } catch (error) {
       console.error('[AuthContext] Registration error:', error);
-      return {
-        success: false,
-        error: error.message || 'Registration failed. Please try again.',
-      };
+      const errorData = error?.response?.data;
+      if (errorData) {
+        console.error('[AuthContext] Registration error payload:', errorData);
+      }
+      if (errorData) return { success: false, error: errorData };
+      return { success: false, error: error?.message || 'Registration failed. Please try again.' };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,6 +172,7 @@ export const AuthProvider = ({ children }) => {
     console.log('[AuthContext] Logout');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     setToken(null);
     setUser(null);
     setIsAuthenticated(false);
@@ -157,8 +180,9 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = (userData) => {
     console.log('[AuthContext] Updating user:', { email: userData.email });
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    const next = serializeUserForStorage(userData);
+    setUser(next);
+    sessionStorage.setItem('user', JSON.stringify(next));
   };
 
   const value = {

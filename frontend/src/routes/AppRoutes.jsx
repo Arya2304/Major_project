@@ -8,6 +8,7 @@ import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import SignLearning from '../pages/SignLearning';
+import SignDetail from '../pages/SignDetail';
 import Courses from '../pages/Courses';
 import CourseDetail from '../pages/CourseDetail';
 
@@ -65,6 +66,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/signs" element={<SignLearning />} />
+        <Route path="/signs/:id" element={<SignDetail />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
       </Route>

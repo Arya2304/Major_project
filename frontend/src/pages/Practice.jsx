@@ -26,10 +26,18 @@ const Practice = () => {
   const [gloveLoading, setGloveLoading] = useState(true);
 
   // Bluetooth Glove Connection state
-  const [isBluetoothConnecting, setIsBluetoothConnecting] = useState(false);
-  const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
-  const [bluetoothDeviceName, setBluetoothDeviceName] = useState('');
+  const [leftGloveConnected, setLeftGloveConnected] = useState(false);
+  const [rightGloveConnected, setRightGloveConnected] = useState(false);
+  const [isConnectingLeft, setIsConnectingLeft] = useState(false);
+  const [isConnectingRight, setIsConnectingRight] = useState(false);
   const [bluetoothError, setBluetoothError] = useState('');
+
+  // Device Refs for disconnection
+  const leftDeviceRef = useRef(null);
+  const rightDeviceRef = useRef(null);
+
+  const isBluetoothConnected = leftGloveConnected || rightGloveConnected;
+  const bothGlovesConnected = leftGloveConnected && rightGloveConnected;
 
   // Stats state
   const [signsPracticed, setSignsPracticed] = useState(12);
@@ -47,12 +55,9 @@ const Practice = () => {
         audio: false,
       });
 
-      if (cameraRef.current) {
-        cameraRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setCameraActive(true);
-        setCameraPermissionDenied(false);
-      }
+      streamRef.current = stream;
+      setCameraActive(true);
+      setCameraPermissionDenied(false);
     } catch (error) {
       console.error('Camera access denied:', error);
       setCameraPermissionDenied(true);
@@ -60,6 +65,12 @@ const Practice = () => {
       setCameraLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (cameraActive && cameraRef.current && streamRef.current) {
+      cameraRef.current.srcObject = streamRef.current;
+    }
+  }, [cameraActive]);
 
   /**
    * Stop camera feed
@@ -75,67 +86,82 @@ const Practice = () => {
     setCameraActive(false);
   };
 
+  const SERVICE_UUID = "12345678-1234-1234-1234-1234567890ab";
+  const CHAR_UUID = "abcd1234-5678-1234-5678-abcdef123456";
+
   /**
-   * Connect to Bluetooth Glove Device
-   * Opens device picker and establishes Bluetooth connection
+   * Connect to Bluetooth Glove Devices separately
    */
-  const connectToGlove = async () => {
-    setIsBluetoothConnecting(true);
+  const connectLeftGlove = async () => {
+    setIsConnectingLeft(true);
     setBluetoothError('');
-
     try {
-      // Check if Bluetooth is supported
-      if (!navigator.bluetooth) {
-        throw new Error('Bluetooth not supported in this browser. Please use Chrome or Edge.');
-      }
-
-      // Request device selection
+      if (!navigator.bluetooth) throw new Error('Use Chrome browser');
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: 'SignGlove' }],
-        optionalServices: [], // Add service UUIDs if needed
-      }).catch(() => {
-        // If filtering by name fails, ask user to select any device
-        return navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [],
-        });
+        acceptAllDevices: true,
+        optionalServices: [SERVICE_UUID],
       });
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SERVICE_UUID);
+      const char = await service.getCharacteristic(CHAR_UUID);
+      await char.startNotifications();
+      // char.addEventListener('characteristicvaluechanged', handleLeft);
 
-      // Connect to device GATT
-      const gattServer = await device.gatt.connect();
-      
-      // Update states on successful connection
-      setBluetoothDeviceName(device.name || 'Glove Device');
-      setIsBluetoothConnected(true);
-      setIsBluetoothConnecting(false);
-      
-      console.log(`✅ Connected to: ${device.name}`);
+      leftDeviceRef.current = device;
+      device.addEventListener('gattserverdisconnected', () => setLeftGloveConnected(false));
 
-      // Handle device disconnection
-      device.addEventListener('gattserverdisconnected', () => {
-        setIsBluetoothConnected(false);
-        setBluetoothDeviceName('');
-        console.log('❌ Glove disconnected');
-      });
-
+      console.log("LEFT connected");
+      setLeftGloveConnected(true);
     } catch (error) {
-      setIsBluetoothConnecting(false);
-      setIsBluetoothConnected(false);
-      setBluetoothDeviceName('');
-
-      // Handle different error types
-      if (error.name === 'NotFoundError') {
-        setBluetoothError('No Bluetooth device found. Ensure gloves are powered on and in range.');
-      } else if (error.name === 'NotAllowedError') {
-        setBluetoothError('Bluetooth connection was cancelled.');
-      } else if (error.message.includes('Bluetooth not supported')) {
-        setBluetoothError('Bluetooth not supported in this browser. Please use Chrome or Edge.');
-      } else {
-        setBluetoothError(error.message || 'Failed to connect to glove. Please try again.');
+      if (error.name !== 'NotFoundError' && !error.message.includes('cancelled')) {
+        setBluetoothError(`Left Glove: ${error.message}`);
       }
-      
-      console.error('❌ Bluetooth connection error:', error);
+    } finally {
+      setIsConnectingLeft(false);
     }
+  };
+
+  const disconnectLeftGlove = () => {
+    if (leftDeviceRef.current && leftDeviceRef.current.gatt.connected) {
+      leftDeviceRef.current.gatt.disconnect();
+    }
+    setLeftGloveConnected(false);
+  };
+
+  const connectRightGlove = async () => {
+    setIsConnectingRight(true);
+    setBluetoothError('');
+    try {
+      if (!navigator.bluetooth) throw new Error('Use Chrome browser');
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [SERVICE_UUID],
+      });
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(SERVICE_UUID);
+      const char = await service.getCharacteristic(CHAR_UUID);
+      await char.startNotifications();
+      // char.addEventListener('characteristicvaluechanged', handleRight);
+
+      rightDeviceRef.current = device;
+      device.addEventListener('gattserverdisconnected', () => setRightGloveConnected(false));
+
+      console.log("RIGHT connected");
+      setRightGloveConnected(true);
+    } catch (error) {
+      if (error.name !== 'NotFoundError' && !error.message.includes('cancelled')) {
+        setBluetoothError(`Right Glove: ${error.message}`);
+      }
+    } finally {
+      setIsConnectingRight(false);
+    }
+  };
+
+  const disconnectRightGlove = () => {
+    if (rightDeviceRef.current && rightDeviceRef.current.gatt.connected) {
+      rightDeviceRef.current.gatt.disconnect();
+    }
+    setRightGloveConnected(false);
   };
 
   /**
@@ -165,7 +191,7 @@ const Practice = () => {
 
         if (response.ok) {
           const data = await response.json();
-          
+
           if (data.gesture) {
             setDetectedSign(data.gesture);
             setGloveConnected(true);
@@ -174,7 +200,7 @@ const Practice = () => {
             setDetectedSign(null);
             setGloveConnected(true);
           }
-          
+
           setGloveLoading(false);
         } else {
           setGloveConnected(false);
@@ -201,7 +227,7 @@ const Practice = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-primary-500 to-accent-500 py-12">
         <div className="page-container">
-          <h1 className="text-4xl font-black text-white mb-2">Practice Mode <FaHandPeace className="inline-block ml-2" style={{fontSize: '1em'}} /></h1>
+          <h1 className="text-4xl font-black text-white mb-2">Practice Mode <FaHandPeace className="inline-block ml-2" style={{ fontSize: '1em' }} /></h1>
           <p className="text-lg text-primary-100">
             Mirror the instructor and perfect your signing
           </p>
@@ -226,47 +252,34 @@ const Practice = () => {
                 {/* Connection Status */}
                 <div className="mb-8 text-center">
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <FaCircle 
-                      className={`text-lg ${gloveConnected ? 'text-green-500' : 'text-gray-400'}`}
+                    <FaCircle
+                      className={`text-lg ${bothGlovesConnected ? 'text-green-500' : isBluetoothConnected ? 'text-blue-500' : 'text-gray-400'}`}
                       style={{
-                        animation: gloveConnected ? 'pulse 2s infinite' : 'none'
+                        animation: bothGlovesConnected ? 'pulse 2s infinite' : 'none'
                       }}
                     />
-                    <span className={`font-semibold ${gloveConnected ? 'text-green-600' : 'text-gray-600'}`}>
-                      {gloveLoading ? 'Connecting...' : gloveConnected ? 'Connected' : 'Waiting for device...'}
+                    <span className={`font-semibold ${bothGlovesConnected ? 'text-green-600' : isBluetoothConnected ? 'text-blue-600' : 'text-gray-600'}`}>
+                      {bothGlovesConnected ? 'Both Connected Successfully' : isBluetoothConnected ? 'One Connected...' : 'Waiting for device...'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-600">Bluetooth Gloves Status</p>
-                </div>
-
-                {/* Detected Gesture Display */}
-                <div className="w-full max-w-xs">
-                  <div className="bg-white rounded-lg p-8 border-2 border-primary-200 shadow-md text-center mb-6">
-                    <p className="text-xs text-gray-600 mb-2 font-semibold">DETECTED SIGN</p>
-                    <div className="text-4xl font-black text-primary-600 min-h-16 flex items-center justify-center">
-                      {detectedSign ? detectedSign : '...'}
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="text-center text-xs text-gray-600 space-y-2">
-                    <p>Position your hand in front of the glove sensors</p>
-                    <p>Keep steady for 1-2 seconds for detection</p>
-                  </div>
                 </div>
               </div>
             </div>
 
             {/* Status Info */}
             <div className="mt-4">
-              <div className={`p-4 rounded-lg text-sm ${
-                gloveConnected 
-                  ? 'bg-green-50 border border-green-200 text-green-800' 
+              <div className={`p-4 rounded-lg text-sm ${bothGlovesConnected
+                ? 'bg-green-50 border border-green-200 text-green-800'
+                : isBluetoothConnected
+                  ? 'bg-blue-50 border border-blue-200 text-blue-800'
                   : 'bg-yellow-50 border border-yellow-200 text-yellow-800'
-              }`}>
-                {gloveConnected 
-                  ? 'Gloves connected and ready. Your gestures will appear above.' 
-                  : 'Waiting for glove connection. Ensure Bluetooth gloves are powered and in range.'}
+                }`}>
+                {bothGlovesConnected
+                  ? 'Both Gloves Connected Successfully'
+                  : isBluetoothConnected
+                    ? 'One Glove Connected. Waiting for the other...'
+                    : 'Waiting for glove connection'}
               </div>
 
               {/* Bluetooth Error Message */}
@@ -276,30 +289,51 @@ const Practice = () => {
                 </div>
               )}
 
-              {/* Connect Gloves Button */}
-              <div className="mt-4">
-                {isBluetoothConnected ? (
-                  <div className="bg-green-100 border-2 border-green-400 rounded-lg p-4 text-center">
-                    <p className="text-sm font-semibold text-green-800">
-                      ✅ Connected to {bluetoothDeviceName}
-                    </p>
-                  </div>
-                ) : (
+              {/* Connect Gloves Buttons */}
+              <div className="mt-4 flex flex-col gap-3">
+                {!leftGloveConnected ? (
                   <AccessibleButton
                     variant="primary"
-                    onClick={connectToGlove}
-                    disabled={isBluetoothConnecting}
+                    onClick={connectLeftGlove}
+                    disabled={isConnectingLeft}
                     className="w-full"
                   >
-                    {isBluetoothConnecting ? (
-                      <>
-                        <FaHourglass className="inline-block mr-2" /> Connecting...
-                      </>
+                    {isConnectingLeft ? (
+                      <><FaHourglass className="inline-block mr-2" /> Connecting Left...</>
                     ) : (
-                      <>
-                        <FaBluetooth className="inline-block mr-2" /> Connect Gloves
-                      </>
+                      <><FaBluetooth className="inline-block mr-2" /> Connect Left Glove</>
                     )}
+                  </AccessibleButton>
+                ) : (
+                  <AccessibleButton
+                    variant="secondary"
+                    onClick={disconnectLeftGlove}
+                    className="w-full bg-green-50 border-2 border-green-400 text-green-800 hover:bg-red-50 hover:border-red-400 hover:text-red-800 transition-colors"
+                  >
+                    ✅ Left Connected (Disconnect)
+                  </AccessibleButton>
+                )}
+
+                {!rightGloveConnected ? (
+                  <AccessibleButton
+                    variant="primary"
+                    onClick={connectRightGlove}
+                    disabled={isConnectingRight}
+                    className="w-full"
+                  >
+                    {isConnectingRight ? (
+                      <><FaHourglass className="inline-block mr-2" /> Connecting Right...</>
+                    ) : (
+                      <><FaBluetooth className="inline-block mr-2" /> Connect Right Glove</>
+                    )}
+                  </AccessibleButton>
+                ) : (
+                  <AccessibleButton
+                    variant="secondary"
+                    onClick={disconnectRightGlove}
+                    className="w-full bg-green-50 border-2 border-green-400 text-green-800 hover:bg-red-50 hover:border-red-400 hover:text-red-800 transition-colors"
+                  >
+                    ✅ Right Connected (Disconnect)
                   </AccessibleButton>
                 )}
               </div>
