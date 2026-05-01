@@ -1,358 +1,258 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import ReactPlayer from 'react-player';
-import { coursesAPI } from '../api/courses';
-import { progressAPI } from '../api/progress';
-import Loader from '../components/common/Loader';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
-const toAbsoluteMediaUrl = (url) => {
-  if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  return `${API_BASE_URL}${url}`;
-};
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import {
+  getLesson,
+  getCourseById,
+  getNextLesson,
+  getPreviousLesson,
+} from '../data/mockData';
+import { markLessonComplete } from '../utils/progressUtils';
+import AccessibleButton from '../components/common/AccessibleButton';
+import { FaVideo, FaBook, FaChevronRight, FaChevronLeft, FaCheck } from 'react-icons/fa';
 
 const LessonPlayer = () => {
   const { lessonId } = useParams();
   const navigate = useNavigate();
-  const playerRef = useRef(null);
+  const { user } = useAuth();
 
   // State management
-  const [course, setCourse] = useState(null);
   const [lesson, setLesson] = useState(null);
-  const [courseId, setCourseId] = useState(null);
-  const [lessons, setLessons] = useState([]);
-  const [lessonProgress, setLessonProgress] = useState(null);
+  const [course, setCourse] = useState(null);
+  const [nextLesson, setNextLesson] = useState(null);
+  const [previousLesson, setPreviousLesson] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [marking, setMarking] = useState(false);
-  const [showCompletionUI, setShowCompletionUI] = useState(false);
-  const [watchTime, setWatchTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [error, setError] = useState(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
-    const fetchLessonData = async () => {
+    const loadLesson = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const parsedLessonId = parseInt(lessonId, 10);
-        if (!parsedLessonId) throw new Error('Invalid lesson id');
+        const parsedLessonId = parseInt(lessonId);
+        const lessonData = getLesson(parsedLessonId);
 
-        // Fetch lesson first, then derive course from it.
-        const lessonData = await coursesAPI.getLesson(parsedLessonId);
-        const derivedCourseId = lessonData?.course;
-        if (!derivedCourseId) throw new Error('Lesson is missing course id');
+        if (!lessonData) {
+          setError(`Lesson #${parsedLessonId} not found. Please select a valid lesson.`);
+          setLoading(false);
+          return;
+        }
 
-        const courseData = await coursesAPI.getCourse(derivedCourseId);
+        // Get course data
+        const courseData = getCourseById(lessonData.courseId);
+        if (!courseData) {
+          setError('Course not found');
+          setLoading(false);
+          return;
+        }
 
-        setCourseId(derivedCourseId);
-        setCourse(courseData);
+        // Get navigation data
+        const nextLessonData = getNextLesson(parsedLessonId);
+        const previousLessonData = getPreviousLesson(parsedLessonId);
+
         setLesson(lessonData);
-        setLessons(courseData.lessons || []);
-
-          // Fetch lesson progress
-          try {
-            const progress = await progressAPI.getLessonProgress(parsedLessonId);
-            setLessonProgress(progress);
-            if (progress.is_completed) {
-              setShowCompletionUI(true);
-            }
-          } catch (error) {
-            console.log('Lesson progress not found, creating new tracking');
-          }
-      } catch (error) {
-        console.error('Failed to fetch lesson data:', error);
-      } finally {
+        setCourse(courseData);
+        setNextLesson(nextLessonData);
+        setPreviousLesson(previousLessonData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading lesson:', err);
+        setError('Failed to load lesson. Please try again.');
         setLoading(false);
       }
     };
 
-    fetchLessonData();
+    loadLesson();
   }, [lessonId]);
 
-  // Handle marking lesson as complete
-  const handleMarkComplete = async () => {
-    setMarking(true);
-    try {
-      const parsedLessonId = parseInt(lessonId, 10);
-      const parsedCourseId = parseInt(courseId, 10);
-      if (!parsedLessonId || !parsedCourseId) throw new Error('Missing ids to update progress');
-
-      await progressAPI.updateLessonProgress(parsedLessonId, {
-        is_completed: true,
-        watch_duration: Math.round(watchTime),
-      });
-
-      // Update enrollment progress
-      try {
-        const enrollment = await coursesAPI.getEnrollment(parsedCourseId);
-        if (!enrollment) return;
-
-        const allProgress = await progressAPI.getAllLessonProgress();
-        const progressList = allProgress?.results || allProgress || [];
-
-        const totalLessons = lessons.length || 0;
-        const completedCount = progressList.filter((p) => {
-          if (!p?.is_completed) return false;
-          const lessonCourseId =
-            typeof p?.lesson?.course === 'object' ? p.lesson.course.id : p?.lesson?.course;
-          return Number(lessonCourseId) === parsedCourseId;
-        }).length;
-
-        const progress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
-        await coursesAPI.updateProgress(enrollment.id, progress);
-      } catch (error) {
-        console.error('Failed to update enrollment progress:', error);
-      }
-
-      setShowCompletionUI(true);
-    } catch (error) {
-      console.error('Failed to mark lesson complete:', error);
-      alert('Failed to mark lesson complete. Please try again.');
-    } finally {
-      setMarking(false);
+  const handleContinueLesson = () => {
+    // Mark current lesson as completed
+    if (lesson && course) {
+      markLessonComplete(course.id, lesson.id);
     }
-  };
 
-  // Navigate to next lesson
-  const handleNextLesson = () => {
-    const currentIndex = lessons.findIndex((l) => l.id === parseInt(lessonId));
-    if (currentIndex < lessons.length - 1) {
-      const nextLesson = lessons[currentIndex + 1];
+    if (nextLesson) {
+      setIsCompleted(true);
       navigate(`/lesson/${nextLesson.id}`);
+    } else {
+      setIsCompleted(true);
+      navigate(`/learn`);
     }
   };
 
-  // Navigate to previous lesson
   const handlePreviousLesson = () => {
-    const currentIndex = lessons.findIndex((l) => l.id === parseInt(lessonId));
-    if (currentIndex > 0) {
-      const prevLesson = lessons[currentIndex - 1];
-      navigate(`/lesson/${prevLesson.id}`);
+    if (previousLesson) {
+      navigate(`/lesson/${previousLesson.id}`);
     }
   };
-
-  const currentIndex = lessons.findIndex((l) => l.id === parseInt(lessonId));
-  const hasNextLesson = currentIndex < lessons.length - 1;
-  const hasPrevLesson = currentIndex > 0;
-  const isLastLesson = currentIndex === lessons.length - 1;
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading lesson...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!course || !lesson) {
+  if (error) {
     return (
-      <div className="p-8">
-        <p className="text-red-600 text-lg mb-4">Lesson not found.</p>
-        <Link to={`/learn/${courseId ?? ''}`} className="text-primary-600 hover:text-primary-700 font-medium">
-          ← Back to Course
-        </Link>
+      <div className="min-h-screen bg-white p-6">
+        <div className="page-container max-w-4xl">
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-red-700 mb-2">⚠️ Error</h2>
+            <p className="text-red-600 mb-4">{error}</p>
+            <AccessibleButton
+              variant="primary"
+              onClick={() => navigate('/learn')}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Back to Learning
+            </AccessibleButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!lesson || !course) {
+    return (
+      <div className="min-h-screen bg-white p-6">
+        <div className="page-container max-w-4xl">
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6">
+            <p className="text-yellow-700">Lesson not found. Please select a valid lesson.</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-8 sticky top-0 z-40 shadow-sm">
-        <Link to={`/learn/${courseId}`} className="text-primary-600 hover:text-primary-700 font-medium mb-4 inline-block">
-          ← Back to Course
-        </Link>
-        <div className="mt-4">
-          <p className="text-sm text-gray-600 font-medium">{course.title}</p>
-          <h1 className="text-3xl font-black text-dark-500">Lesson {currentIndex + 1}: {lesson.title}</h1>
-        </div>
+    <div className="min-h-screen bg-white pb-20">
+      {/* Breadcrumb */}
+      <div className="page-container max-w-5xl py-6 text-sm text-gray-600">
+        <button onClick={() => navigate('/learn')} className="text-primary-600 hover:underline">
+          My Learning
+        </button>
+        <span className="mx-2">/</span>
+        <span className="text-gray-900 font-semibold">{lesson.title}</span>
       </div>
 
-      <div className="p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Learning Area */}
-          <div className="lg:col-span-2">
-            {/* Video Player Container */}
-            <div className="bg-black rounded-2xl overflow-hidden aspect-video flex items-center justify-center shadow-xl mb-8 relative group">
-              {lesson.video ? (
-                <ReactPlayer
-                  ref={playerRef}
-                  url={toAbsoluteMediaUrl(lesson.video)}
-                  playing={false}
-                  controls={true}
-                  width="100%"
-                  height="100%"
-                  onDuration={setDuration}
-                  onProgress={(state) => setWatchTime(state.playedSeconds)}
-                />
-              ) : (
-                <div className="text-center text-white">
-                  <div className="text-6xl mb-4">🎥</div>
-                  <p className="text-xl font-bold">Video Content</p>
-                  <p className="text-sm text-gray-400 mt-2">Video not available for this lesson</p>
-                </div>
-              )}
+      {/* Main Content */}
+      <div className="page-container max-w-5xl mb-12">
+        {/* Video Section */}
+        <div className="bg-gray-100 rounded-lg overflow-hidden mb-6 aspect-video flex items-center justify-center">
+          <div className="text-center">
+            <FaVideo className="text-6xl text-gray-400 mb-3 mx-auto" />
+            <p className="text-gray-600 font-semibold">{lesson.title}</p>
+            <p className="text-gray-500 text-sm">{lesson.duration}</p>
+          </div>
+        </div>
+
+        {/* Lesson Info */}
+        <div className="bg-gradient-to-r from-primary-50 to-accent-50 rounded-lg p-6 border-2 border-primary-100 mb-8">
+          <h1 className="text-3xl font-black text-gray-900 mb-2">{lesson.title}</h1>
+          <p className="text-gray-700 mb-4">{lesson.description}</p>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-600">Duration:</span>
+              <span className="text-primary-600 font-bold">{lesson.duration}</span>
             </div>
-
-            {/* Lesson Content */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 mb-8">
-              <h2 className="text-2xl font-bold text-dark-500 mb-4">📖 Lesson Details</h2>
-              <p className="text-gray-700 leading-relaxed mb-6">{lesson.description}</p>
-
-              <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-gray-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">⏱️</span>
-                  <div>
-                    <p className="text-xs text-gray-600">Duration</p>
-                    <p className="font-bold text-dark-500">{lesson.duration}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">📚</span>
-                  <div>
-                    <p className="text-xs text-gray-600">Signs in lesson</p>
-                    <p className="font-bold text-dark-500">{lesson.signs ? lesson.signs.length : 0}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Learning Objectives */}
-              {lesson.objectives && (
-                <div>
-                  <h3 className="text-lg font-bold text-dark-500 mb-3">🎯 Learning Objectives</h3>
-                  <ul className="space-y-2">
-                    {lesson.objectives.map((obj, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-gray-700">
-                        <span className="text-primary-600 font-bold">✓</span>
-                        <span>{obj}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-600">Level:</span>
+              <span className="text-accent-600 font-bold">{lesson.difficulty}</span>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-600">Course:</span>
+              <span className="text-primary-600 font-bold">{course.title}</span>
+            </div>
+          </div>
+        </div>
 
-            {/* Practice Exercises */}
-            {lesson.exercises && lesson.exercises.length > 0 && !showCompletionUI && (
-              <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 mb-8">
-                <h2 className="text-2xl font-bold text-dark-500 mb-4">✋ Practice Exercises</h2>
-                <div className="space-y-4">
-                  {lesson.exercises.map((exercise, idx) => (
-                    <div key={exercise.id} className="p-4 rounded-lg border-2 border-gray-200 hover:border-primary-300 bg-gray-50">
-                      <div className="flex items-start gap-3">
-                        <div className="text-2xl">{exercise.type === 'practice' ? '✋' : '❓'}</div>
-                        <div className="flex-1">
-                          <p className="font-bold text-dark-500">{exercise.text}</p>
-                          <p className="text-xs text-gray-600 uppercase tracking-wider mt-1">{exercise.type}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Navigation Buttons */}
-            {!showCompletionUI && (
-              <div className="flex gap-4 mb-8">
-                {hasPrevLesson && (
-                  <button
-                    onClick={handlePreviousLesson}
-                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-dark-500 rounded-xl font-bold hover:bg-gray-50 transition-all duration-300"
-                  >
-                    ← Previous Lesson
-                  </button>
-                )}
-                <button
-                  onClick={handleMarkComplete}
-                  disabled={marking}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-success-500 to-success-600 text-white rounded-xl font-bold hover:shadow-lg active:scale-95 transition-all duration-300 disabled:opacity-75"
+        {/* Vocabulary Section */}
+        {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-black text-gray-900 mb-4 flex items-center gap-2">
+              <FaBook className="text-primary-600" />
+              Vocabulary
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {lesson.vocabulary.map((vocab, index) => (
+                <div
+                  key={index}
+                  className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-all"
                 >
-                  {marking ? 'Marking...' : '✓ Mark as Complete'}
-                </button>
-              </div>
-            )}
+                  <p className="font-bold text-gray-900 mb-2">{vocab.english}</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <span className="font-semibold">Hindi:</span> {vocab.hindi}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold">Marathi:</span> {vocab.marathi}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            {/* Lesson Status Card */}
-            {showCompletionUI ? (
-              <div className="bg-gradient-to-br from-success-50 to-success-100 rounded-2xl p-8 border-2 border-success-200 sticky top-32 shadow-lg">
-                <div className="text-center">
-                  <div className="text-7xl mb-4 animate-bounce">🎉</div>
-                  <h3 className="text-2xl font-black text-success-700 mb-2">Lesson Complete!</h3>
-                  <p className="text-sm text-success-600 mb-6">Excellent work! You've mastered this lesson.</p>
-
-                  <div className="space-y-2">
-                    {hasNextLesson && (
-                      <button
-                        onClick={handleNextLesson}
-                        className="w-full px-4 py-3 bg-success-500 text-white rounded-lg font-bold hover:bg-success-600 active:scale-95 transition-all"
-                      >
-                        Next Lesson →
-                      </button>
-                    )}
-                    <button
-                      onClick={() => navigate(`/learn/${courseId}`)}
-                      className="w-full px-4 py-3 border-2 border-success-300 text-success-700 rounded-lg font-bold hover:bg-success-50 transition-all"
-                    >
-                      {isLastLesson ? '✓ Back to Course' : 'Back to Course'}
-                    </button>
-                  </div>
-
-                  {isLastLesson && (
-                    <div className="mt-6 text-center p-4 bg-white rounded-lg border-2 border-success-200">
-                      <p className="text-3xl mb-2">🏆</p>
-                      <p className="font-bold text-success-700">Course Completed!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="sticky top-32 space-y-6">
-                {/* Course Outline */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                  <h3 className="text-lg font-bold text-dark-500 mb-4">📚 Course Outline</h3>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {lessons.map((l, idx) => (
-                      <Link
-                        key={l.id}
-                        to={`/lesson/${l.id}`}
-                        className={`block p-3 rounded-lg transition-all ${
-                          l.id === parseInt(lessonId)
-                            ? 'bg-primary-100 border-l-4 border-primary-600 text-primary-600 font-bold'
-                            : 'hover:bg-gray-100 text-gray-700 border-l-4 border-transparent'
-                        }`}
-                      >
-                        <p className="font-medium text-sm">Lesson {idx + 1}</p>
-                        <p className="text-xs text-gray-600 truncate">{l.title}</p>
-                      </Link>
-                    ))}
+        {/* Exercises Section */}
+        {lesson.exercises && lesson.exercises.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-black text-gray-900 mb-4">Exercises</h2>
+            <div className="space-y-3">
+              {lesson.exercises.map((exercise) => (
+                <div
+                  key={exercise.id}
+                  className="bg-white border-2 border-gray-200 rounded-lg p-4 flex items-start gap-3 hover:border-primary-300 transition-all"
+                >
+                  <FaCheck className="text-green-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold text-gray-900">{exercise.text}</p>
+                    <p className="text-xs text-gray-500 mt-1">Type: {exercise.type}</p>
                   </div>
                 </div>
-
-                {/* Progress Stats */}
-                <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6 border border-primary-200">
-                  <h3 className="text-lg font-bold text-primary-700 mb-4">📊 Progress</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs text-primary-600 font-bold uppercase tracking-wider mb-1">Lesson {currentIndex + 1} of {lessons.length}</p>
-                      <div className="w-full bg-primary-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="bg-primary-600 h-2 transition-all duration-300"
-                          style={{ width: `${((currentIndex + 1) / lessons.length) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    {lesson.video && duration > 0 && (
-                      <div>
-                        <p className="text-xs text-primary-600 font-bold uppercase tracking-wider mb-1">Video Progress</p>
-                        <p className="text-xs text-primary-600">
-                          {Math.round(watchTime)}s / {Math.round(duration)}s
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex gap-4 mt-12 pt-6 border-t-2 border-gray-200">
+          {previousLesson ? (
+            <AccessibleButton
+              variant="secondary"
+              onClick={handlePreviousLesson}
+              className="flex items-center gap-2"
+            >
+              <FaChevronLeft /> Previous Lesson
+            </AccessibleButton>
+          ) : (
+            <div></div>
+          )}
+
+          {nextLesson ? (
+            <AccessibleButton
+              variant="primary"
+              onClick={handleContinueLesson}
+              className="flex items-center gap-2 ml-auto"
+            >
+              Continue Course <FaChevronRight />
+            </AccessibleButton>
+          ) : (
+            <AccessibleButton
+              variant="primary"
+              onClick={() => {
+                setIsCompleted(true);
+                navigate('/learn');
+              }}
+              className="flex items-center gap-2 ml-auto bg-green-600 hover:bg-green-700"
+            >
+              <FaCheck /> Complete Course
+            </AccessibleButton>
+          )}
         </div>
       </div>
     </div>

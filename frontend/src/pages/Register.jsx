@@ -64,7 +64,7 @@ const Register = () => {
     const result = await register(submitData);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/learn');
     } else {
       // Better error message extraction
       let errorMsg = 'Registration failed. Please try again.';
@@ -97,7 +97,7 @@ const Register = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="first_name">👤 First Name</label>
+              <label htmlFor="first_name">First Name</label>
               <input
                 type="text"
                 id="first_name"
@@ -110,7 +110,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="last_name">👤 Last Name</label>
+              <label htmlFor="last_name">Last Name</label>
               <input
                 type="text"
                 id="last_name"
@@ -124,7 +124,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="username">👤 Username</label>
+            <label htmlFor="username">Username</label>
             <input
               type="text"
               id="username"
@@ -137,7 +137,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">📧 Email</label>
+            <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
@@ -152,7 +152,7 @@ const Register = () => {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="password">🔒 Password</label>
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
@@ -166,7 +166,7 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="password_confirm">🔒 Confirm Password</label>
+              <label htmlFor="password_confirm">Confirm Password</label>
               <input
                 type="password"
                 id="password_confirm"
@@ -181,7 +181,7 @@ const Register = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="role">👥 Role</label>
+            <label htmlFor="role">Role</label>
             {loadingRoles ? (
               <Loader />
             ) : (

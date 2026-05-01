@@ -21,8 +21,8 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result.success) {
-      // Redirect to the page user was trying to access, or dashboard
-      const from = searchParams.get('from') || '/dashboard';
+      // Redirect to the page user was trying to access, or learn
+      const from = searchParams.get('from') || '/learn';
       navigate(from);
     } else {
       // Better error message extraction

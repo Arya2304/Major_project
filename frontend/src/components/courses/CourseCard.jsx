@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FaBook, FaStar, FaCheck, FaUsers } from 'react-icons/fa';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 const toAbsoluteMediaUrl = (url) => {
@@ -45,7 +46,7 @@ const CourseCard = ({ course }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
-          <div className="text-6xl opacity-80 group-hover:scale-110 transition-transform duration-300">📚</div>
+          <FaBook className="text-6xl opacity-80 group-hover:scale-110 transition-transform duration-300 text-white" />
         )}
         {/* Overlay for better contrast */}
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors duration-300"></div>
@@ -55,8 +56,8 @@ const CourseCard = ({ course }) => {
             {course.language_display}
           </span>
           {course.is_featured && (
-            <span className="bg-yellow-400 text-yellow-900 px-2.5 py-1 rounded-full text-xs font-bold shadow-md animate-pulse">
-              ⭐ Featured
+            <span className="bg-yellow-400 text-yellow-900 px-2.5 py-1 rounded-full text-xs font-bold shadow-md animate-pulse flex items-center gap-1">
+              <FaStar /> Featured
             </span>
           )}
         </div>
@@ -78,17 +79,17 @@ const CourseCard = ({ course }) => {
             {course.difficulty_display}
           </span>
           <span className="text-gray-600 text-xs font-medium flex items-center gap-1.5 ml-auto">
-            📖 {course.lessons_count}
+            <FaBook /> {course.lessons_count}
           </span>
           {course.enrolled_count > 0 && (
             <span className="text-gray-600 text-xs font-medium flex items-center gap-1">
-              👥 {course.enrolled_count}
+              <FaUsers /> {course.enrolled_count}
             </span>
           )}
         </div>
         {course.is_enrolled && (
           <div className="mt-2 text-primary-600 font-semibold text-sm flex items-center gap-1.5 bg-primary-50 px-3 py-1.5 rounded-lg">
-            ✓ Enrolled
+            <FaCheck /> Enrolled
           </div>
         )}
       </div>

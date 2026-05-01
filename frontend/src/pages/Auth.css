@@ -66,6 +66,8 @@
   font-size: 1rem;
   transition: all 0.2s ease;
   background: #f9fafb;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:hover,

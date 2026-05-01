@@ -44,7 +44,7 @@ const KeyboardNavigation = ({ children }) => {
         case 'd':
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
-            navigate('/dashboard');
+            navigate('/learn');
           }
           break;
         case 'l':

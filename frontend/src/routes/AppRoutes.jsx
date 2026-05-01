@@ -12,12 +12,12 @@ import SignDetail from '../pages/SignDetail';
 import Courses from '../pages/Courses';
 import CourseDetail from '../pages/CourseDetail';
 
-// Dashboard Pages (Private)
-import Dashboard from '../pages/Dashboard';
+// Private Pages
 import Learn from '../pages/Learn';
 import Dictionary from '../pages/Dictionary';
 import LessonPlayer from '../pages/LessonPlayer';
 import Practice from '../pages/Practice';
+import Profile from '../pages/Profile';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -62,7 +62,7 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Layout Routes */}
       <Route element={<PublicLayout />}>
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Home />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/learn" /> : <Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/signs" element={<SignLearning />} />
@@ -71,7 +71,7 @@ const AppRoutes = () => {
         <Route path="/courses/:id" element={<CourseDetail />} />
       </Route>
 
-      {/* Dashboard Layout Routes */}
+      {/* Private Layout Routes */}
       <Route
         element={
           <PrivateRoute>
@@ -79,21 +79,12 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/learn" element={<Learn />} />
         <Route path="/learn/:courseId" element={<CourseDetail />} />
         <Route path="/lesson/:lessonId" element={<LessonPlayer />} />
         <Route path="/dictionary" element={<Dictionary />} />
         <Route path="/practice" element={<Practice />} />
-        <Route
-          path="/profile"
-          element={
-            <div className="p-8">
-              <h1 className="text-4xl font-black text-dark-500 mb-2">Profile</h1>
-              <p className="text-lg text-gray-600">Profile settings coming soon!</p>
-            </div>
-          }
-        />
+        <Route path="/profile" element={<Profile />} />
       </Route>
 
       {/* Catch all */}

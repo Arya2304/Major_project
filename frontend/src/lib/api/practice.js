@@ -58,7 +58,7 @@ export const connectDevice = async () => {
   // Simulate connection delay (2-3 seconds)
   await delay(2000 + Math.random() * 1000);
   
-  console.log('[Practice API] ✅ Device connected');
+  console.log('[Practice API] Device connected');
   
   return {
     connected: true,
@@ -84,7 +84,7 @@ export const startSession = async () => {
   const randomSign = SIGN_DATABASE[Math.floor(Math.random() * SIGN_DATABASE.length)];
   const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   
-  console.log('[Practice API] ✅ Session started:', sessionId);
+  console.log('[Practice API] Session started:', sessionId);
   
   return {
     sessionId: sessionId,
@@ -121,7 +121,7 @@ export const getLiveData = async (sessionId) => {
   // Determine status based on accuracy threshold
   const status = accuracy >= 75 ? 'correct' : 'retry';
   
-  console.log(`[Practice API] 📊 Accuracy: ${accuracy}% - Status: ${status}`);
+  console.log(`[Practice API] Accuracy: ${accuracy}% - Status: ${status}`);
   
   return {
     accuracy: accuracy,
@@ -148,7 +148,7 @@ export const nextSign = async () => {
   
   const randomSign = SIGN_DATABASE[Math.floor(Math.random() * SIGN_DATABASE.length)];
   
-  console.log(`[Practice API] ✅ Next sign: ${randomSign}`);
+  console.log(`[Practice API] Next sign: ${randomSign}`);
   
   return {
     currentSign: randomSign,
@@ -168,7 +168,7 @@ export const endSession = async (sessionId) => {
   
   await delay(500);
   
-  console.log('[Practice API] ✅ Session ended');
+  console.log('[Practice API] Session ended');
   
   return {
     sessionId: sessionId,
@@ -194,7 +194,7 @@ export const disconnectDevice = async () => {
   
   await delay(1000);
   
-  console.log('[Practice API] ✅ Device disconnected');
+  console.log('[Practice API] Device disconnected');
   
   return {
     connected: false,

@@ -1,459 +1,432 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  connectDevice,
-  startSession,
-  getLiveData,
-  nextSign,
-  endSession,
-  disconnectDevice,
-} from '../lib/api/practice';
-import Loader from '../components/common/Loader';
-import { progressAPI } from '../api/progress';
+import React, { useState, useRef, useEffect } from 'react';
+import AccessibleVideo from '../components/common/AccessibleVideo';
+import AccessibleButton from '../components/common/AccessibleButton';
+import { FaHandPeace, FaGraduationCap, FaRedo, FaUser, FaFrownOpen, FaCamera, FaHourglass, FaPlay, FaStop, FaChartBar, FaLightbulb, FaCircle, FaGlobe, FaBluetooth } from 'react-icons/fa';
 import './Practice.css';
 
+/**
+ * Practice.jsx — Phase 5
+ * Main practice page with side-by-side instructor video and camera mirror
+ * Users practice signing against the instructor and see themselves mirrored
+ */
+
 const Practice = () => {
-  const navigate = useNavigate();
-  const liveDataIntervalRef = useRef(null);
+  // Video refs and state
+  const videoRef = useRef(null);
+  const cameraRef = useRef(null);
+  const streamRef = useRef(null);
 
-  // ============================================================================
-  // STATE MANAGEMENT
-  // ============================================================================
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(false);
 
-  // Device connection state
-  const [isConnected, setIsConnected] = useState(false);
-  const [deviceName, setDeviceName] = useState('');
-  const [connectingLoader, setConnectingLoader] = useState(false);
+  // IoT Gesture state
+  const [detectedSign, setDetectedSign] = useState(null);
+  const [gloveConnected, setGloveConnected] = useState(false);
+  const [gloveLoading, setGloveLoading] = useState(true);
 
-  // Session state
-  const [sessionId, setSessionId] = useState(null);
-  const [currentSign, setCurrentSign] = useState('');
-  const [sessionStarted, setSessionStarted] = useState(false);
-  const [startingLoader, setStartingLoader] = useState(false);
+  // Bluetooth Glove Connection state
+  const [isBluetoothConnecting, setIsBluetoothConnecting] = useState(false);
+  const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
+  const [bluetoothDeviceName, setBluetoothDeviceName] = useState('');
+  const [bluetoothError, setBluetoothError] = useState('');
 
-  // Live data state
-  const [accuracy, setAccuracy] = useState(0);
-  const [status, setStatus] = useState(''); // 'correct' or 'retry'
-  const [stats, setStats] = useState({
-    attempts: 0,
-    correct: 0,
-  });
+  // Stats state
+  const [signsPracticed, setSignsPracticed] = useState(12);
+  const [accuracy, setAccuracy] = useState(87);
+  const [timeSpent, setTimeSpent] = useState('18 min');
 
-  // Practice statistics
-  const [practiceStats, setPracticeStats] = useState({
-    totalSessions: 0,
-    totalPracticeTime: 0,
-    signsLearned: 0,
-    averageAccuracy: 0,
-    currentStreak: 0,
-  });
-  const [loadingStats, setLoadingStats] = useState(true);
+  /**
+   * Start camera feed
+   */
+  const startCamera = async () => {
+    setCameraLoading(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+        audio: false,
+      });
 
-  // UI state
-  const [error, setError] = useState(null);
-
-  // ============================================================================
-  // LIFECYCLE: Load practice statistics
-  // ============================================================================
-
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        console.log('[Practice] Loading practice statistics...');
-        const statsData = await progressAPI.getStats();
-        setPracticeStats({
-          // These mappings keep the UI populated with real backend values.
-          totalSessions: statsData?.total_lessons_completed ?? 0,
-          totalPracticeTime: Math.round((statsData?.total_practice_time ?? 0) / 60), // seconds -> minutes
-          signsLearned: statsData?.total_signs_learned ?? 0,
-          averageAccuracy: 0, // Not provided by backend stats yet
-          currentStreak: statsData?.current_streak ?? 0,
-        });
-      } catch (err) {
-        console.error('[Practice] Error loading stats:', err);
-        setError('Failed to load practice statistics');
-      } finally {
-        setLoadingStats(false);
+      if (cameraRef.current) {
+        cameraRef.current.srcObject = stream;
+        streamRef.current = stream;
+        setCameraActive(true);
+        setCameraPermissionDenied(false);
       }
-    };
+    } catch (error) {
+      console.error('Camera access denied:', error);
+      setCameraPermissionDenied(true);
+    } finally {
+      setCameraLoading(false);
+    }
+  };
 
-    loadStats();
+  /**
+   * Stop camera feed
+   */
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (cameraRef.current) {
+      cameraRef.current.srcObject = null;
+    }
+    setCameraActive(false);
+  };
+
+  /**
+   * Connect to Bluetooth Glove Device
+   * Opens device picker and establishes Bluetooth connection
+   */
+  const connectToGlove = async () => {
+    setIsBluetoothConnecting(true);
+    setBluetoothError('');
+
+    try {
+      // Check if Bluetooth is supported
+      if (!navigator.bluetooth) {
+        throw new Error('Bluetooth not supported in this browser. Please use Chrome or Edge.');
+      }
+
+      // Request device selection
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ name: 'SignGlove' }],
+        optionalServices: [], // Add service UUIDs if needed
+      }).catch(() => {
+        // If filtering by name fails, ask user to select any device
+        return navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: [],
+        });
+      });
+
+      // Connect to device GATT
+      const gattServer = await device.gatt.connect();
+      
+      // Update states on successful connection
+      setBluetoothDeviceName(device.name || 'Glove Device');
+      setIsBluetoothConnected(true);
+      setIsBluetoothConnecting(false);
+      
+      console.log(`✅ Connected to: ${device.name}`);
+
+      // Handle device disconnection
+      device.addEventListener('gattserverdisconnected', () => {
+        setIsBluetoothConnected(false);
+        setBluetoothDeviceName('');
+        console.log('❌ Glove disconnected');
+      });
+
+    } catch (error) {
+      setIsBluetoothConnecting(false);
+      setIsBluetoothConnected(false);
+      setBluetoothDeviceName('');
+
+      // Handle different error types
+      if (error.name === 'NotFoundError') {
+        setBluetoothError('No Bluetooth device found. Ensure gloves are powered on and in range.');
+      } else if (error.name === 'NotAllowedError') {
+        setBluetoothError('Bluetooth connection was cancelled.');
+      } else if (error.message.includes('Bluetooth not supported')) {
+        setBluetoothError('Bluetooth not supported in this browser. Please use Chrome or Edge.');
+      } else {
+        setBluetoothError(error.message || 'Failed to connect to glove. Please try again.');
+      }
+      
+      console.error('❌ Bluetooth connection error:', error);
+    }
+  };
+
+  /**
+   * Cleanup camera on unmount
+   */
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
   }, []);
 
-  // ============================================================================
-  // LIFECYCLE: Live data simulation
-  // ============================================================================
-
+  /**
+   * Poll gesture data from Django backend every 1 second
+   * POST to /api/sign-language/gesture/latest/
+   */
   useEffect(() => {
-    if (!sessionId) return;
+    let pollInterval;
 
-    console.log('[Practice] Starting live data stream...');
-
-    // Start live data updates every 1 second
-    liveDataIntervalRef.current = setInterval(async () => {
+    const fetchLatestGesture = async () => {
       try {
-        const data = await getLiveData(sessionId);
-        setAccuracy(data.accuracy);
-        setStatus(data.status);
-        setStats({
-          attempts: data.attempts,
-          correct: data.correct,
+        const response = await fetch('http://127.0.0.1:8000/api/sign-language/gesture/latest/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
-      } catch (err) {
-        console.error('[Practice] Error getting live data:', err);
-      }
-    }, 1000);
 
-    return () => {
-      if (liveDataIntervalRef.current) {
-        clearInterval(liveDataIntervalRef.current);
-        console.log('[Practice] Stopped live data stream');
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.gesture) {
+            setDetectedSign(data.gesture);
+            setGloveConnected(true);
+          } else {
+            // No gesture detected yet
+            setDetectedSign(null);
+            setGloveConnected(true);
+          }
+          
+          setGloveLoading(false);
+        } else {
+          setGloveConnected(false);
+          setGloveLoading(false);
+        }
+      } catch (error) {
+        console.warn('Gesture API unavailable:', error);
+        setGloveConnected(false);
+        setGloveLoading(false);
       }
     };
-  }, [sessionId]);
 
-  // ============================================================================
-  // HANDLER: Connect device
-  // ============================================================================
+    // Initial fetch
+    fetchLatestGesture();
 
-  const handleConnect = async () => {
-    try {
-      setConnectingLoader(true);
-      setError(null);
-      console.log('[Practice] User initiated device connection');
+    // Poll every 1 second
+    pollInterval = setInterval(fetchLatestGesture, 1000);
 
-      const response = await connectDevice();
-      setIsConnected(response.connected);
-      setDeviceName(response.deviceName);
-      console.log('[Practice] ✅ Device connected successfully');
-    } catch (err) {
-      console.error('[Practice] Connection error:', err);
-      setError('Failed to connect device. Please try again.');
-      setIsConnected(false);
-    } finally {
-      setConnectingLoader(false);
-    }
-  };
-
-  // ============================================================================
-  // HANDLER: Start practice session
-  // ============================================================================
-
-  const handleStart = async () => {
-    if (!isConnected) {
-      setError('Please connect device first');
-      return;
-    }
-
-    try {
-      setStartingLoader(true);
-      setError(null);
-      console.log('[Practice] User initiated session start');
-
-      const response = await startSession();
-      setSessionId(response.sessionId);
-      setCurrentSign(response.currentSign);
-      setSessionStarted(true);
-      setAccuracy(0);
-      setStatus('');
-      setStats({ attempts: 0, correct: 0 });
-      console.log('[Practice] ✅ Session started');
-    } catch (err) {
-      console.error('[Practice] Start session error:', err);
-      setError('Failed to start session. Please try again.');
-    } finally {
-      setStartingLoader(false);
-    }
-  };
-
-  // ============================================================================
-  // HANDLER: Next sign
-  // ============================================================================
-
-  const handleNext = async () => {
-    try {
-      setError(null);
-      console.log('[Practice] User requested next sign');
-
-      const response = await nextSign();
-      setCurrentSign(response.currentSign);
-      setStatus('');
-      setStats({ attempts: 0, correct: 0 });
-      console.log('[Practice] ✅ Sign changed to:', response.currentSign);
-    } catch (err) {
-      console.error('[Practice] Next sign error:', err);
-      setError('Failed to load next sign. Please try again.');
-    }
-  };
-
-  // ============================================================================
-  // HANDLER: End session
-  // ============================================================================
-
-  const handleEnd = async () => {
-    try {
-      console.log('[Practice] User ended session');
-
-      if (liveDataIntervalRef.current) {
-        clearInterval(liveDataIntervalRef.current);
-      }
-
-      if (sessionId) {
-        const summary = await endSession(sessionId);
-        console.log('[Practice] Session summary:', summary);
-      }
-
-      setSessionStarted(false);
-      setSessionId(null);
-      setCurrentSign('');
-      setAccuracy(0);
-      setStatus('');
-      setStats({ attempts: 0, correct: 0 });
-    } catch (err) {
-      console.error('[Practice] Error ending session:', err);
-    }
-  };
-
-  // ============================================================================
-  // HANDLER: Disconnect device
-  // ============================================================================
-
-  const handleDisconnect = async () => {
-    try {
-      if (sessionStarted) {
-        await handleEnd();
-      }
-
-      const response = await disconnectDevice();
-      setIsConnected(response.connected);
-      setDeviceName('');
-      console.log('[Practice] ✅ Device disconnected');
-    } catch (err) {
-      console.error('[Practice] Disconnect error:', err);
-      setError('Failed to disconnect device.');
-    }
-  };
-
-  // ============================================================================
-  // HELPER: Get status color
-  // ============================================================================
-
-  const getStatusColor = () => {
-    if (status === 'correct') return 'text-green-600';
-    if (status === 'retry') return 'text-orange-600';
-    return 'text-gray-600';
-  };
-
-  const getStatusBgColor = () => {
-    if (status === 'correct') return 'bg-green-50';
-    if (status === 'retry') return 'bg-orange-50';
-    return 'bg-gray-50';
-  };
-
-  const getStatusMessage = () => {
-    if (status === 'correct') return '✅ Correct!';
-    if (status === 'retry') return '🔄 Try again';
-    return 'Listening...';
-  };
-
-  // ============================================================================
-  // RENDER
-  // ============================================================================
-
-  if (loadingStats) {
-    return <Loader />;
-  }
+    return () => clearInterval(pollInterval);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-5xl font-black text-dark-500 mb-2">🧤 Glove Practice</h1>
-          <p className="text-lg text-gray-600 font-medium">
-            Connect your glove and practice real-time sign language recognition
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary-500 to-accent-500 py-12">
+        <div className="page-container">
+          <h1 className="text-4xl font-black text-white mb-2">Practice Mode <FaHandPeace className="inline-block ml-2" style={{fontSize: '1em'}} /></h1>
+          <p className="text-lg text-primary-100">
+            Mirror the instructor and perfect your signing
           </p>
         </div>
+      </div>
 
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-8 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-            <p className="text-red-700 font-medium">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 font-bold"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
+      {/* Main Content */}
+      <div className="page-container py-12">
+        {/* Video Panels Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* LEFT: Smart Glove Input */}
+          <div className="flex flex-col">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                <FaGlobe className="inline-block mr-2" /> Smart Glove Input
+              </h2>
+              <p className="text-sm text-gray-600">Real-time gesture detection from Bluetooth gloves</p>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Device Connection Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-black text-dark-500 mb-1">📱 Device Connection</h2>
-                  <p className="text-sm text-gray-600">Connect your HastVani glove to begin</p>
+            <div className="flex-1 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden shadow-lg border-2 border-gray-200">
+              <div className="w-full h-full flex flex-col items-center justify-center p-8">
+                {/* Connection Status */}
+                <div className="mb-8 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <FaCircle 
+                      className={`text-lg ${gloveConnected ? 'text-green-500' : 'text-gray-400'}`}
+                      style={{
+                        animation: gloveConnected ? 'pulse 2s infinite' : 'none'
+                      }}
+                    />
+                    <span className={`font-semibold ${gloveConnected ? 'text-green-600' : 'text-gray-600'}`}>
+                      {gloveLoading ? 'Connecting...' : gloveConnected ? 'Connected' : 'Waiting for device...'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">Bluetooth Gloves Status</p>
                 </div>
-                <div className={`w-4 h-4 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-300'}`} />
-              </div>
 
-              {isConnected ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <span className="text-2xl">✅</span>
-                    <div>
-                      <p className="font-bold text-green-900">{deviceName}</p>
-                      <p className="text-sm text-green-700">Connected and ready</p>
+                {/* Detected Gesture Display */}
+                <div className="w-full max-w-xs">
+                  <div className="bg-white rounded-lg p-8 border-2 border-primary-200 shadow-md text-center mb-6">
+                    <p className="text-xs text-gray-600 mb-2 font-semibold">DETECTED SIGN</p>
+                    <div className="text-4xl font-black text-primary-600 min-h-16 flex items-center justify-center">
+                      {detectedSign ? detectedSign : '...'}
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleDisconnect}
-                    className="w-full px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 active:scale-95 transition-all duration-200"
+                  {/* Info */}
+                  <div className="text-center text-xs text-gray-600 space-y-2">
+                    <p>Position your hand in front of the glove sensors</p>
+                    <p>Keep steady for 1-2 seconds for detection</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Status Info */}
+            <div className="mt-4">
+              <div className={`p-4 rounded-lg text-sm ${
+                gloveConnected 
+                  ? 'bg-green-50 border border-green-200 text-green-800' 
+                  : 'bg-yellow-50 border border-yellow-200 text-yellow-800'
+              }`}>
+                {gloveConnected 
+                  ? 'Gloves connected and ready. Your gestures will appear above.' 
+                  : 'Waiting for glove connection. Ensure Bluetooth gloves are powered and in range.'}
+              </div>
+
+              {/* Bluetooth Error Message */}
+              {bluetoothError && (
+                <div className="mt-3 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                  ⚠️ {bluetoothError}
+                </div>
+              )}
+
+              {/* Connect Gloves Button */}
+              <div className="mt-4">
+                {isBluetoothConnected ? (
+                  <div className="bg-green-100 border-2 border-green-400 rounded-lg p-4 text-center">
+                    <p className="text-sm font-semibold text-green-800">
+                      ✅ Connected to {bluetoothDeviceName}
+                    </p>
+                  </div>
+                ) : (
+                  <AccessibleButton
+                    variant="primary"
+                    onClick={connectToGlove}
+                    disabled={isBluetoothConnecting}
+                    className="w-full"
                   >
-                    Disconnect Device
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleConnect}
-                  disabled={connectingLoader}
-                  className="w-full px-6 py-4 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 active:scale-95 transition-all duration-200 disabled:opacity-75 text-lg"
-                >
-                  {connectingLoader ? 'Connecting...' : 'Connect Device'}
-                </button>
-              )}
-            </div>
-
-            {/* Practice Session Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-2xl font-black text-dark-500 mb-6">🎯 Practice Session</h2>
-
-              {sessionStarted ? (
-                <div className="space-y-8">
-                  {/* Current Sign */}
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-gray-600 uppercase mb-2">Current Sign</p>
-                    <p className="text-6xl font-black text-primary-600 mb-4">{currentSign}</p>
-                  </div>
-
-                  {/* Accuracy Display */}
-                  <div className={`p-6 rounded-xl text-center ${getStatusBgColor()}`}>
-                    <p className="text-sm font-bold text-gray-600 uppercase mb-2">Accuracy</p>
-                    <p className={`text-5xl font-black mb-2 ${getStatusColor()}`}>{accuracy}%</p>
-                    <p className={`text-lg font-bold ${getStatusColor()}`}>{getStatusMessage()}</p>
-                  </div>
-
-                  {/* Statistics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-200">
-                      <p className="text-sm font-bold text-gray-600 mb-2">Attempts</p>
-                      <p className="text-3xl font-black text-dark-500">{stats.attempts}</p>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-lg text-center border border-gray-200">
-                      <p className="text-sm font-bold text-gray-600 mb-2">Correct</p>
-                      <p className="text-3xl font-black text-green-600">{stats.correct}</p>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={handleNext}
-                      className="px-6 py-3 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 active:scale-95 transition-all duration-200"
-                    >
-                      Next Sign →
-                    </button>
-                    <button
-                      onClick={handleEnd}
-                      className="px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 active:scale-95 transition-all duration-200"
-                    >
-                      End Session
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={handleStart}
-                  disabled={!isConnected || startingLoader}
-                  className="w-full px-6 py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                >
-                  {startingLoader ? 'Starting session...' : !isConnected ? 'Connect device first' : 'Start Practice Session'}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Sidebar: Statistics */}
-          <div className="space-y-6">
-            {/* Performance Stats */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-lg font-black text-dark-500 mb-6">📊 Your Stats</h3>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <span className="font-bold text-gray-700">Total Sessions</span>
-                  <span className="text-2xl font-black text-primary-600">{practiceStats.totalSessions}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <span className="font-bold text-gray-700">Practice Time</span>
-                  <span className="text-2xl font-black text-primary-600">{practiceStats.totalPracticeTime}m</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <span className="font-bold text-gray-700">Signs Learned</span>
-                  <span className="text-2xl font-black text-primary-600">{practiceStats.signsLearned}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <span className="font-bold text-gray-700">Avg. Accuracy</span>
-                  <span className="text-2xl font-black text-success-600">{practiceStats.averageAccuracy}%</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-                  <span className="font-bold text-gray-700">🔥 Streak</span>
-                  <span className="text-2xl font-black text-orange-600">{practiceStats.currentStreak} days</span>
-                </div>
+                    {isBluetoothConnecting ? (
+                      <>
+                        <FaHourglass className="inline-block mr-2" /> Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <FaBluetooth className="inline-block mr-2" /> Connect Gloves
+                      </>
+                    )}
+                  </AccessibleButton>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* Tips */}
-            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl shadow-sm border border-primary-200 p-6">
-              <h3 className="text-lg font-black text-primary-900 mb-4">💡 Tips</h3>
-              <ul className="space-y-3 text-sm text-primary-900">
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>Keep your glove steady during practice</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>Practice in good lighting conditions</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>Consistent practice improves accuracy</span>
-                </li>
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>Aim for 80%+ accuracy per sign</span>
-                </li>
-              </ul>
+          {/* RIGHT: Camera Mirror */}
+          <div className="flex flex-col">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900">You <FaUser className="inline-block ml-2" /></h2>
+              <p className="text-sm text-gray-600">See yourself mirrored and compare with instructor</p>
             </div>
 
-            {/* Debug Info */}
-            <div className="bg-gray-900 rounded-2xl shadow-sm border border-gray-700 p-4 text-xs font-mono text-green-500">
-              <p className="mb-2 font-bold text-green-400">📡 Debug Info</p>
-              <p>Connected: {isConnected ? 'Yes ✅' : 'No ❌'}</p>
-              <p>Device: {deviceName || 'None'}</p>
-              <p>Session: {sessionId ? sessionId.substring(0, 15) + '...' : 'None'}</p>
-              <p>Status: {status || 'Waiting'}</p>
+            {/* Camera Feed Container */}
+            <div className="flex-1 rounded-xl overflow-hidden shadow-lg camera-frame">
+              {cameraPermissionDenied ? (
+                /* Camera Permission Denied */
+                <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-8">
+                  <FaFrownOpen className="text-7xl mb-4 text-gray-400" />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Camera Access Denied</h3>
+                  <p className="text-gray-600 text-center mb-6">
+                    Please allow camera access in your browser settings to use practice mode.
+                  </p>
+                  <p className="text-sm text-gray-500 text-center">
+                    Most browsers show a permission prompt at the top of the page. Click "Allow" to continue.
+                  </p>
+                </div>
+              ) : cameraActive ? (
+                /* Camera Stream */
+                <video
+                  ref={cameraRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  aria-label="Your camera feed"
+                />
+              ) : (
+                /* Camera Placeholder */
+                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
+                  <FaCamera className="text-7xl mb-4 text-gray-400" />
+                  <p className="text-gray-600 font-semibold">Ready to practice?</p>
+                  <p className="text-sm text-gray-500 mt-2">Start your camera to begin</p>
+                </div>
+              )}
+            </div>
+
+            {/* Camera Controls */}
+            <div className="mt-4 space-y-3">
+              {!cameraActive ? (
+                <AccessibleButton
+                  variant="primary"
+                  onClick={startCamera}
+                  disabled={cameraLoading}
+                  className="w-full"
+                >
+                  {cameraLoading ? (
+                    <>
+                      <FaHourglass className="inline-block mr-2" /> Requesting camera...
+                    </>
+                  ) : (
+                    <>
+                      <FaPlay className="inline-block mr-2" /> Start Camera
+                    </>
+                  )}
+                </AccessibleButton>
+              ) : (
+                <AccessibleButton
+                  variant="danger"
+                  onClick={stopCamera}
+                  className="w-full"
+                >
+                  <><FaStop className="inline-block mr-2" /> Stop Camera</>
+                </AccessibleButton>
+              )}
             </div>
           </div>
+        </div>
+
+        {/* Session Stats */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6"><FaChartBar className="inline-block mr-2" /> Session Stats</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Signs Practiced Card */}
+            <div className="stat-card bg-white border-2 border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all">
+              <div className="text-4xl font-black text-primary-600 mb-2">{signsPracticed}</div>
+              <p className="text-gray-700 font-semibold">Signs Practiced</p>
+              <p className="text-sm text-gray-600 mt-2">In this session</p>
+            </div>
+
+            {/* Accuracy Card */}
+            <div className="stat-card bg-white border-2 border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all">
+              <div className="text-4xl font-black text-accent-600 mb-2">{accuracy}%</div>
+              <p className="text-gray-700 font-semibold">Accuracy</p>
+              <p className="text-sm text-gray-600 mt-2">Detected match with instructor</p>
+            </div>
+
+            {/* Time Spent Card */}
+            <div className="stat-card bg-white border-2 border-gray-200 rounded-xl p-8 hover:shadow-lg transition-all">
+              <div className="text-2xl font-black text-green-600 mb-2">{timeSpent}</div>
+              <p className="text-gray-700 font-semibold">Time Spent</p>
+              <p className="text-sm text-gray-600 mt-2">Keep practicing to improve</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tips Section */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-8">
+          <h3 className="text-lg font-bold text-blue-900 mb-4"><FaLightbulb className="inline-block mr-2" /> Practice Tips</h3>
+          <ul className="space-y-3">
+            <li className="flex gap-3 text-blue-900">
+              <span className="text-xl">✓</span>
+              <span>Find good lighting so the camera can clearly see your hand movements</span>
+            </li>
+            <li className="flex gap-3 text-blue-900">
+              <span className="text-xl">✓</span>
+              <span>Keep your camera at eye level for the best view of your signing</span>
+            </li>
+            <li className="flex gap-3 text-blue-900">
+              <span className="text-xl">✓</span>
+              <span>Practice slowly at first, then gradually speed up to match the instructor</span>
+            </li>
+            <li className="flex gap-3 text-blue-900">
+              <span className="text-xl">✓</span>
+              <span>Pay attention to hand shape, position, movement, and facial expression</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
